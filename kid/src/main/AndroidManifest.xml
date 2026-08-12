@@ -64,6 +64,12 @@
         <activity
             android:name=".guide.GuideActivity"
             android:exported="false" />
+        <activity
+            android:name=".guard.BlockActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
     </application>
 
 </manifest>

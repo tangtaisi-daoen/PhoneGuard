@@ -107,8 +107,9 @@ class GuardAccessibilityService : AccessibilityService() {
         android.util.Log.d(TAG, "$pkg verdict: blocked=${verdict.blocked} reason=${verdict.reason} rulesV=${rules.version} appLimits=${rules.appLimits}")
 
         if (verdict.blocked) {
-            // 全屏拦截（借鉴 cst）：遮罩不可绕过，直到用户离开该应用
+            // 全屏拦截：浮层 + 拦截 Activity 抢占前台（借鉴 cst；游戏无法压制 Activity）
             BlockOverlay.show(this, verdict.reason ?: getString(R.string.overlay_default_reason))
+            BlockActivity.launch(this, verdict.reason ?: getString(R.string.overlay_default_reason))
         } else {
             if (BlockOverlay.isShowing()) BlockOverlay.hide()
         }
