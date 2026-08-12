@@ -1,11 +1,7 @@
 package com.familyguard.core.backend
 
-import com.familyguard.core.categories.AppCategory
-import com.familyguard.core.data.AppLimit
-import com.familyguard.core.data.CategoryLimit
-import com.familyguard.core.data.DailyTotalLimit
 import com.familyguard.core.data.RuleSet
-import com.familyguard.core.data.TimeRange
+import com.familyguard.core.rules.RuleCodec
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 
@@ -52,53 +48,6 @@ object CloudBaseRules {
         ) ?: return null
         val doc = docs.firstOrNull() ?: return RuleSet()
         val ruleJson = doc["ruleSet"] as? JsonObject ?: return RuleSet()
-        return parseRuleSet(ruleJson)
-    }
-
-    /** 手动解析 RuleSet（Gson 对 Kotlin data class 的反射反序列化不可靠）。 */
-    private fun parseRuleSet(json: JsonObject): RuleSet {
-        val appLimits = json.getAsJsonArray("appLimits")?.mapNotNull { el ->
-            runCatching {
-                val o = el.asJsonObject
-                AppLimit(
-                    packageName = o.get("packageName")?.asString ?: "",
-                    category = runCatching {
-                        AppCategory.valueOf(o.get("category")?.asString ?: "OTHER")
-                    }.getOrDefault(AppCategory.OTHER),
-                    dailyMinutes = o.get("dailyMinutes")?.asInt ?: 0,
-                    bannedRanges = o.getAsJsonArray("bannedRanges")?.mapNotNull { r ->
-                        val ro = r.asJsonObject
-                        TimeRange(
-                            ro.get("startMinutes")?.asInt ?: 0,
-                            ro.get("endMinutes")?.asInt ?: 0,
-                        )
-                    } ?: emptyList(),
-                )
-            }.getOrNull()
-        } ?: emptyList()
-
-        val categoryLimits = json.getAsJsonArray("categoryLimits")?.mapNotNull { el ->
-            runCatching {
-                val o = el.asJsonObject
-                CategoryLimit(
-                    category = runCatching {
-                        AppCategory.valueOf(o.get("category")?.asString ?: "OTHER")
-                    }.getOrDefault(AppCategory.OTHER),
-                    dailyMinutes = o.get("dailyMinutes")?.asInt ?: 0,
-                )
-            }.getOrNull()
-        } ?: emptyList()
-
-        val dailyTotal = runCatching {
-            val o = json.getAsJsonObject("dailyTotal")
-            DailyTotalLimit(totalMinutes = o?.get("totalMinutes")?.asInt ?: 0)
-        }.getOrDefault(DailyTotalLimit())
-
-        return RuleSet(
-            appLimits = appLimits,
-            categoryLimits = categoryLimits,
-            dailyTotal = dailyTotal,
-            version = json.get("version")?.asLong ?: 0,
-        )
+        return RuleCodec.parse(ruleJson)
     }
 }

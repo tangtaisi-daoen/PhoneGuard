@@ -10,6 +10,7 @@ import com.familyguard.core.backend.CloudBaseAuth
 import com.familyguard.core.backend.CloudBaseBindings
 import com.familyguard.core.session.SessionStore
 import com.familyguard.kid.databinding.ActivityMainBinding
+import com.familyguard.kid.guide.GuideActivity
 import com.familyguard.kid.stats.HeartbeatService
 import kotlinx.coroutines.launch
 
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
             showUnbound()
         }
         binding.btnBind.setOnClickListener { doBind() }
+        binding.btnGuide.setOnClickListener { openGuide() }
     }
 
     private fun showUnbound() {
@@ -38,6 +40,10 @@ class MainActivity : AppCompatActivity() {
     private fun showBound() {
         binding.groupBound.visibility = View.VISIBLE
         binding.groupUnbound.visibility = View.GONE
+    }
+
+    private fun openGuide() {
+        startActivity(Intent(this, GuideActivity::class.java))
     }
 
     private fun doBind() {

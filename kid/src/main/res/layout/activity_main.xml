@@ -66,5 +66,12 @@
             android:text="@string/bound_placeholder"
             android:textSize="14sp"
             android:textColor="#888888" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/guide_title" />
     </LinearLayout>
 </LinearLayout>

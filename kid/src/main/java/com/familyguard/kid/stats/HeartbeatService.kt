@@ -4,7 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import com.familyguard.core.backend.CloudBaseAuth
+import com.familyguard.core.backend.CloudBaseRules
 import com.familyguard.core.backend.CloudBaseUsage
+import com.familyguard.core.session.RuleCacheStore
 import com.familyguard.core.session.SessionStore
 import com.familyguard.kid.KidApp
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +47,12 @@ class HeartbeatService : Service() {
         if (!SessionStore.isBound) return
         // 匿名登录（refresh_token 长期有效，失败重试下次）
         val auth = CloudBaseAuth.signInAnonymously(KidApp.client, SessionStore.deviceId) ?: return
+        // 同步刷新规则缓存（拦截服务使用，断网兜底旧规则）
+        SessionStore.boundAdminUid?.let { adminUid ->
+            CloudBaseRules.fetchRules(KidApp.client, adminUid)?.let { rules ->
+                RuleCacheStore.save(rules)
+            }
+        }
         val byPackage = UsageStatsCollector.collectTodayMinutes(this)
         val total = byPackage.values.sum()
         val current = UsageStatsCollector.currentForegroundApp(this)

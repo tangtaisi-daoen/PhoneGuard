@@ -11,4 +11,17 @@
     <string name="error_anon_failed">网络异常，请重试</string>
     <string name="error_bind_failed">绑定失败：邀请码无效或已被使用</string>
     <string name="bind_success">绑定成功</string>
+    <string name="accessibility_desc">用于检测并拦截超出使用时长限制的应用（手机守护核心功能）</string>
+    <string name="guide_title">开启防护（共 4 步）</string>
+    <string name="guide_subtitle">每一步都必须在弟弟手机上开启，否则拦截可能失效</string>
+    <string name="guide_usage">使用情况访问</string>
+    <string name="guide_accessibility">无障碍服务</string>
+    <string name="guide_battery">忽略电池优化</string>
+    <string name="guide_autostart">自启动（手动设置）</string>
+    <string name="guide_ok">✓ 已开启</string>
+    <string name="guide_missing">✗ 未开启</string>
+    <string name="guide_autostart_manual">进入设置开启「允许自启动」</string>
+    <string name="guide_go">去设置</string>
+    <string name="guide_refresh">刷新状态</string>
+    <string name="guide_open_settings_failed">无法打开设置页，请手动到应用管理中设置</string>
 </resources>
