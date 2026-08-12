@@ -27,5 +27,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.okhttp)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
 }
