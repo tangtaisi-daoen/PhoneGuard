@@ -32,11 +32,18 @@ object SessionStore {
     // ---- 管理端会话 ----
 
     fun saveAuth(accessToken: String, refreshToken: String?, userId: String, username: String) {
+        saveTokens(accessToken, refreshToken)
+        prefs.edit()
+            .putString(KEY_USER_ID, userId)
+            .putString(KEY_USERNAME, username)
+            .apply()
+    }
+
+    /** token 刷新后回写（不覆盖用户信息）。 */
+    fun saveTokens(accessToken: String, refreshToken: String?) {
         prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
             .putString(KEY_REFRESH_TOKEN, refreshToken)
-            .putString(KEY_USER_ID, userId)
-            .putString(KEY_USERNAME, username)
             .apply()
     }
 

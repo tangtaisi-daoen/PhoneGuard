@@ -142,6 +142,25 @@ class CloudBaseVerifyTest {
         }
     }
 
+    @Test
+    fun step5_tokenAutoRefresh() {
+        runBlocking {
+            // 正常登录拿双 token
+            val signin = CloudBaseAuth.signIn(client, CloudBaseTestConfig.username, CloudBaseTestConfig.password)
+            assertNotNull("登录失败", signin)
+            client.refreshToken = signin!!.refreshToken
+            println("登录成功，测试损坏 access_token 触发自动刷新")
+
+            // 人为损坏 access_token → 下一次请求应 401 → 自动刷新 → 重试成功
+            client.accessToken = "expired.fake.token"
+            val docs = CloudBaseDb.queryDocuments(client, "bindings", where = mapOf("inviteCode" to "zzzzzz"), limit = 1)
+            assertNotNull("自动刷新后请求仍失败", docs)
+            assertTrue("刷新后 access_token 应已更新", !client.accessToken.isNullOrBlank() && client.accessToken != "expired.fake.token")
+            assertNotNull("refresh_token 应已轮换", client.refreshToken)
+            println("自动刷新成功: accessToken 已更新(${client.accessToken!!.take(20)}...), refreshToken 已轮换")
+        }
+    }
+
     private suspend fun runDbRoundtrip(client: CloudBaseClient) {
         val mark = System.currentTimeMillis()
         val inserted = CloudBaseDb.insertDocuments(
