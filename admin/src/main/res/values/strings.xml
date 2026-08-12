@@ -54,7 +54,9 @@
     <string name="rules_saved">规则已保存并下发</string>
     <string name="rules_save_failed">保存失败，请检查网络</string>
     <string name="rules_pkg_invalid">包名格式不对：请填应用包名（如 com.xingin.xhs），不是应用名称</string>
-    <string name="rules_pick_app">从被控端应用中选择（点击包名输入框触发）</string>
+    <string name="rules_pick_app">从被控端应用中选择</string>
+    <string name="rules_pick_empty">暂无被控端应用列表（等下一次心跳，最多 2 分钟）</string>
+    <string name="rules_pkg_tap">点此选择应用</string>
     <string-array name="rules_categories">
         <item>自动</item>
         <item>游戏</item>
