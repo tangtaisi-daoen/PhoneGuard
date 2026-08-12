@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.familyguard.admin.databinding.ActivityMainBinding
+import com.familyguard.admin.notify.AdminNotifyService
 import com.familyguard.core.backend.CloudBaseBindings
 import com.familyguard.core.session.SessionStore
 import kotlinx.coroutines.launch
@@ -43,6 +44,13 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnMonitor.setOnClickListener {
             startActivity(Intent(this, MonitorActivity::class.java))
+        }
+        binding.btnAnomaly.setOnClickListener {
+            startActivity(Intent(this, AnomalyActivity::class.java))
+        }
+        binding.btnNotify.setOnClickListener {
+            startService(Intent(this, AdminNotifyService::class.java))
+            Toast.makeText(this, R.string.start_notify, Toast.LENGTH_SHORT).show()
         }
         binding.btnRefreshCode.setOnClickListener { generateInviteCode() }
         binding.btnCopyCode.setOnClickListener { copyInviteCode() }

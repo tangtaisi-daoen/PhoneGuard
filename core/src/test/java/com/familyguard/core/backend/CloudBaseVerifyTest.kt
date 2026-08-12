@@ -190,6 +190,38 @@ class CloudBaseVerifyTest {
         }
     }
 
+    @Test
+    fun step8_eventsRoundtrip() {
+        runBlocking {
+            val auth = CloudBaseAuth.signInAnonymously(client, "verify-device-${System.currentTimeMillis()}")
+            assertNotNull("匿名登录失败", auth)
+            val uid = auth!!.userId
+
+            val ok1 = CloudBaseEvents.report(client, uid, "TIME_CHANGED", "检测到时间回拨")
+            val ok2 = CloudBaseEvents.report(client, uid, "NEW_APP", "安装了新应用：com.example.test")
+            assertTrue("异常上报失败", ok1 && ok2)
+            println("异常上报成功")
+
+            val unread = CloudBaseEvents.fetchUnread(client, uid)
+            assertTrue("未读事件数量不对", unread.size == 2)
+            assertTrue("事件类型不对", unread.any { it.type == "TIME_CHANGED" })
+            println("未读事件: ${unread.size} 条")
+
+            val marked = CloudBaseEvents.markAllRead(client, uid)
+            assertTrue("标记已读失败", marked)
+            val after = CloudBaseEvents.fetchUnread(client, uid)
+            assertTrue("标记后仍有未读", after.isEmpty())
+            println("标记已读成功")
+
+            // 清理
+            val docs = CloudBaseDb.queryDocuments(client, "events", where = mapOf("kidDeviceId" to uid), limit = 10)
+            docs?.forEach { doc ->
+                doc["_id"]?.toString()?.let { CloudBaseDb.deleteDocument(client, "events", it) }
+            }
+            println("测试数据已清理")
+        }
+    }
+
     private suspend fun runDbRoundtrip(client: CloudBaseClient) {
         val mark = System.currentTimeMillis()
         val inserted = CloudBaseDb.insertDocuments(

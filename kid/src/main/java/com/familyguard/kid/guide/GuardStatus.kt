@@ -32,4 +32,11 @@ object GuardStatus {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         return pm.isIgnoringBatteryOptimizations(context.packageName)
     }
+
+    /** 设备管理器是否已激活（防卸载）。 */
+    fun isAdminActive(context: Context): Boolean {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+        val cn = android.content.ComponentName(context, com.familyguard.kid.protect.KidDeviceAdminReceiver::class.java)
+        return dpm.isAdminActive(cn)
+    }
 }

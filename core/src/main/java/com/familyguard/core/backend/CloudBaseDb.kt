@@ -50,7 +50,7 @@ object CloudBaseDb {
 
     /**
      * 按查询条件批量更新文档。
-     * 实测：data 必须显式包 $set 操作符（否则 updated=0），body 为 {"query":..., "data":{"$set":...}}。
+     * 实测：data 必须显式包 $set 操作符（否则 updated=0），批量更新需显式 multi=true。
      */
     suspend fun updateDocuments(
         client: CloudBaseClient,
@@ -60,7 +60,7 @@ object CloudBaseDb {
     ): Int? {
         val resp = client.request(
             "PATCH", "${dbPath()}/collections/$collection/documents",
-            mapOf("query" to where, "data" to mapOf("\u0024set" to data)),
+            mapOf("query" to where, "data" to mapOf("\u0024set" to data), "multi" to true),
         ) ?: return null
         return resp.get("updated")?.asInt ?: resp.get("matched")?.asInt
     }

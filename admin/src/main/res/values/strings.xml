@@ -68,4 +68,18 @@
     <string name="monitor_by_category">按类别：</string>
     <string name="unit_minutes"> 分钟</string>
     <string name="monitor_refresh">刷新</string>
+    <string name="anomaly">异常通知</string>
+    <string name="anomaly_refresh">刷新列表</string>
+    <string name="anomaly_none">暂无异常事件</string>
+    <string name="anomaly_notif_title">手机守护异常（%1$d 条）</string>
+    <string name="notif_channel_anomaly">异常通知</string>
+    <string name="anomaly_type_admin">防卸载被解除</string>
+    <string name="anomaly_type_permission">权限被关闭</string>
+    <string name="anomaly_type_time">时间被修改</string>
+    <string name="anomaly_type_newapp">新安装应用</string>
+    <string name="anomaly_type_offline">被控端离线</string>
+    <string name="anomaly_type_uninstall">卸载尝试</string>
+    <string name="start_notify">开启异常通知</string>
+    <string name="offline_notif_title">被控端可能已离线</string>
+    <string name="offline_notif_text">超过 5 分钟没有收到心跳，可能断网或手机守护被关闭</string>
 </resources>
