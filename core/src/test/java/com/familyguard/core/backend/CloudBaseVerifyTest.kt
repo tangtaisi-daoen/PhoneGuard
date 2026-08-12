@@ -105,6 +105,43 @@ class CloudBaseVerifyTest {
         println("匿名数据已清理")
     }
 
+    @Test
+    fun step4_binding() {
+        runBlocking {
+            // 用管理端账号登录
+            val signin = CloudBaseAuth.signIn(client, CloudBaseTestConfig.username, CloudBaseTestConfig.password)
+            assertNotNull("登录失败", signin)
+
+            // 生成邀请码
+            val code = CloudBaseBindings.generateInviteCode(client, signin!!.userId)
+            assertNotNull("邀请码生成失败", code)
+            assertTrue("邀请码应为 6 位", code!!.length == 6)
+            println("邀请码生成成功: $code")
+
+            // 被控端绑定
+            val binding = CloudBaseBindings.bindWithCode(client, code, "test-kid-device-001")
+            assertNotNull("绑定失败", binding)
+            println("绑定成功: code=$code adminUid=${binding!!.adminUid}")
+
+            // 重复绑定应失败（status 已为 BOUND）
+            val rebind = CloudBaseBindings.bindWithCode(client, code, "test-kid-device-002")
+            assertTrue("重复绑定应失败", rebind == null)
+            println("重复绑定正确被拒绝")
+
+            // 管理端查询当前邀请码
+            val myCode = CloudBaseBindings.getMyInviteCode(client, signin.userId)
+            assertNotNull("查询邀请码失败", myCode)
+            println("管理端当前邀请码: $myCode")
+
+            // 清理测试数据
+            val docs = CloudBaseDb.queryDocuments(client, "bindings", where = mapOf("inviteCode" to code), limit = 1)
+            docs?.firstOrNull()?.get("_id")?.toString()?.let { docId ->
+                CloudBaseDb.deleteDocument(client, "bindings", docId)
+                println("测试数据已清理")
+            }
+        }
+    }
+
     private suspend fun runDbRoundtrip(client: CloudBaseClient) {
         val mark = System.currentTimeMillis()
         val inserted = CloudBaseDb.insertDocuments(

@@ -30,14 +30,14 @@ object CloudBaseDb {
         return ids.mapNotNull { it.asString }
     }
 
-    /** 查询文档列表，返回文档（已做 EJSON 数字解包）。 */
+    /** 查询文档列表，返回文档（已做 EJSON 数字解包）。过滤条件走 URL 参数 query（实测 where 会被忽略）。 */
     suspend fun queryDocuments(
         client: CloudBaseClient,
         collection: String,
         where: Map<String, Any?> = emptyMap(),
         limit: Int = 20,
     ): List<Map<String, Any?>>? {
-        val query = if (where.isEmpty()) "" else "?where=${encode(where)}"
+        val query = if (where.isEmpty()) "" else "?query=${encode(where)}"
         val limitStr = if (where.isEmpty()) "?limit=$limit" else "&limit=$limit"
         val resp = client.request(
             "GET", "${dbPath()}/collections/$collection/documents$query$limitStr",
@@ -52,6 +52,23 @@ object CloudBaseDb {
             "DELETE", "${dbPath()}/collections/$collection/documents/$docId",
         ) ?: return false
         return resp.has("deleted") || resp.has("requestId")
+    }
+
+    /**
+     * 按查询条件批量更新文档。
+     * 实测：data 必须显式包 $set 操作符（否则 updated=0），body 为 {"query":..., "data":{"$set":...}}。
+     */
+    suspend fun updateDocuments(
+        client: CloudBaseClient,
+        collection: String,
+        where: Map<String, Any?>,
+        data: Map<String, Any?>,
+    ): Int? {
+        val resp = client.request(
+            "PATCH", "${dbPath()}/collections/$collection/documents",
+            mapOf("query" to where, "data" to mapOf("\u0024set" to data)),
+        ) ?: return null
+        return resp.get("updated")?.asInt ?: resp.get("matched")?.asInt
     }
 
     /** 把 Strict EJSON 字段解包为普通值（{"$numberLong":"123"} → 123L）。 */
