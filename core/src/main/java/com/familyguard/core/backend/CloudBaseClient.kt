@@ -11,12 +11,11 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.concurrent.TimeUnit
 
 /**
- * CloudBase HTTP API 客户端（官方 Android Kotlin 推荐接入方式）。
- * 参考：https://docs.cloudbase.net/http-api/basic/overview
+ * CloudBase HTTP API 客户端（官方 JS SDK 3.x 同款 REST 接口）。
  *
- * 认证方式：Bearer access_token（用户身份）。
- * access_token 有效期 2 小时，收到 401 时用 refresh_token 自动刷新并重试一次。
- * 刷新接口：POST /auth/v1/token，body {"grant_type":"refresh_token","refresh_token":...}，旧 refresh_token 立即失效。
+ * Base URL：https://{envId}.api.tcloudbasegateway.com（环境级泛域名，CNAME 到 prod.paasgw.tencentcloudbase.com）
+ * 认证：Authorization: Bearer <access_token>；access_token 有效期 2 小时，
+ *       收到 401 时用 refresh_token 自动刷新并重试一次（POST /auth/v1/token，grant_type=refresh_token）。
  */
 class CloudBaseClient(
     val envId: String,
@@ -33,6 +32,9 @@ class CloudBaseClient(
 
     /** 刷新令牌；401 时自动用于换取新 token。 */
     var refreshToken: String? = null
+
+    /** 最近一次请求失败的可读原因（诊断用）。 */
+    var lastError: String? = null
 
     private val gson = Gson()
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
@@ -51,8 +53,10 @@ class CloudBaseClient(
             text = retried.second
         }
         if (code in 200..299 && text != null) {
+            lastError = null
             runCatching { gson.fromJson(text, JsonObject::class.java) }.getOrNull()
         } else {
+            lastError = describeError(code, text)
             null
         }
     }
@@ -78,14 +82,14 @@ class CloudBaseClient(
             builder.method(method, null)
         }
         return runCatching { http.newCall(builder.build()).execute() }
-            .onFailure { return Pair(-1, null) }
+            .onFailure { lastError = "网络异常: ${it.message}"; return Pair(-1, null) }
             .getOrNull()
             ?.use { resp -> Pair(resp.code, resp.body?.string()) }
             ?: Pair(-1, null)
     }
 
     /** 用 refresh_token 换取新 token；成功更新本地并回调持久化。 */
-    private fun refreshTokens(): Boolean {
+    fun refreshTokens(): Boolean {
         val rt = refreshToken ?: return false
         val reqBody = mapOf("grant_type" to "refresh_token", "refresh_token" to rt)
         val (code, text) = execute("POST", "/auth/v1/token", reqBody, emptyMap(), withAuth = false)
@@ -97,5 +101,20 @@ class CloudBaseClient(
         if (newRefresh != null) refreshToken = newRefresh
         onTokenRefreshed?.invoke(newAccess, newRefresh)
         return true
+    }
+
+    /** 把 (code, body) 转成可读错误描述。 */
+    private fun describeError(code: Int, text: String?): String = when {
+        code < 0 -> "网络异常（连接失败/超时）"
+        code == 401 -> "认证失败（token 无效或已过期且刷新失败）"
+        code == 403 -> "无权限（HTTP 403）"
+        code == 404 -> "资源不存在（HTTP 404，检查集合是否已创建）"
+        code == 429 || code == 422 -> "请求过频或超限（HTTP $code）"
+        else -> {
+            val msg = runCatching {
+                gson.fromJson(text, JsonObject::class.java)?.get("message")?.asString
+            }.getOrNull()
+            "HTTP $code: ${msg ?: text?.take(120) ?: "无响应"}"
+        }
     }
 }

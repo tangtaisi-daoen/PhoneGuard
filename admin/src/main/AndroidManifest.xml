@@ -21,6 +21,9 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+        <activity
+            android:name=".DiagActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

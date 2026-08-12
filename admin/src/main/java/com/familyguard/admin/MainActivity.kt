@@ -3,6 +3,7 @@ package com.familyguard.admin
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,9 @@ class MainActivity : AppCompatActivity() {
             SessionStore.clearAuth()
             Toast.makeText(this, R.string.logged_out, Toast.LENGTH_SHORT).show()
             finish()
+        }
+        binding.btnDiag.setOnClickListener {
+            startActivity(Intent(this, DiagActivity::class.java))
         }
         binding.btnRefreshCode.setOnClickListener { generateInviteCode() }
         binding.btnCopyCode.setOnClickListener { copyInviteCode() }
@@ -56,7 +60,8 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val code = CloudBaseBindings.generateInviteCode(AdminApp.client, uid)
             if (code == null) {
-                Toast.makeText(this@MainActivity, R.string.error_gen_code_failed, Toast.LENGTH_SHORT).show()
+                val reason = AdminApp.client.lastError ?: "未知原因"
+                Toast.makeText(this@MainActivity, getString(R.string.error_gen_code_failed) + "\n$reason", Toast.LENGTH_LONG).show()
             } else {
                 showCode(code)
                 Toast.makeText(this@MainActivity, R.string.code_generated, Toast.LENGTH_SHORT).show()

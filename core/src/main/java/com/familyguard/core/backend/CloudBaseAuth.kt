@@ -10,9 +10,7 @@ data class AuthResult(
 )
 
 /**
- * CloudBase 身份认证 API（v1）。
- * 参考：https://docs.cloudbase.net/http-api/auth 与官方 Android Kotlin 快速开始。
- *
+ * CloudBase 身份认证 API（REST，官方 JS SDK 3.x 同款）。
  * 流程：发送邮箱验证码 → 校验验证码拿 verification_token → 注册（携带用户名密码）→ 之后账号密码登录。
  */
 object CloudBaseAuth {
@@ -59,6 +57,7 @@ object CloudBaseAuth {
         val token = resp.get("access_token")?.asString ?: return null
         val userId = resp.get("sub")?.asString ?: return null
         client.accessToken = token
+        client.refreshToken = resp.get("refresh_token")?.asString
         return AuthResult(token, resp.get("refresh_token")?.asString, userId)
     }
 
@@ -71,6 +70,7 @@ object CloudBaseAuth {
         val token = resp.get("access_token")?.asString ?: return null
         val userId = resp.get("sub")?.asString ?: return null
         client.accessToken = token
+        client.refreshToken = resp.get("refresh_token")?.asString
         return AuthResult(token, resp.get("refresh_token")?.asString, userId)
     }
 
@@ -87,6 +87,7 @@ object CloudBaseAuth {
         val token = resp.get("access_token")?.asString ?: return null
         val userId = resp.get("sub")?.asString ?: resp.get("uid")?.asString ?: return null
         client.accessToken = token
+        client.refreshToken = resp.get("refresh_token")?.asString
         return AuthResult(token, resp.get("refresh_token")?.asString, userId)
     }
 

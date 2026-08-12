@@ -33,6 +33,11 @@ object CloudBaseTestConfig {
     val code: String? = props.getProperty("code")?.takeIf { it.isNotBlank() } ?: System.getenv("CLOUDBASE_CODE")
     val verificationId: String? = props.getProperty("verificationId")?.takeIf { it.isNotBlank() }
 
+    /** 移动应用安全来源凭证（控制台：安全配置 → 移动应用安全来源）。 */
+    val appSign: String? = props.getProperty("appSign")
+    val appAccessKeyId: String? = props.getProperty("appAccessKeyId")
+    val appAccessKey: String? = props.getProperty("appAccessKey")
+
     /** 手动验证开关：设置环境变量 CLOUDBASE_VERIFY=1 才执行真实链路验证测试。 */
     val manualVerify: Boolean = System.getenv("CLOUDBASE_VERIFY") == "1"
 }

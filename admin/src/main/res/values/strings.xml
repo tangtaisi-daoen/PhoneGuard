@@ -34,4 +34,6 @@
     <string name="code_copied">邀请码已复制</string>
     <string name="code_generated">邀请码已生成</string>
     <string name="error_gen_code_failed">邀请码生成失败，请检查网络</string>
+    <string name="diag">诊断</string>
+    <string name="diag_run">运行诊断</string>
 </resources>

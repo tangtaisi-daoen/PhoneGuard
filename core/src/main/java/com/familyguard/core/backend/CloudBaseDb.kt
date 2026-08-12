@@ -4,12 +4,12 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 
 /**
- * CloudBase 文档型数据库 HTTP API。
- * 参考：https://docs.cloudbase.net/http-api/nosql/nosql-restful-api
+ * CloudBase 文档型数据库 HTTP API（REST，官方 JS SDK 3.x 同款）。
  *
  * 关键格式：
  * - 插入 body: {"data": [docs]}，响应: {"insertedIds": [...]}
- * - 查询响应: {"offset":0,"limit":N,"list":[...]}（Strict EJSON：数字为 {"$numberLong":"..."}）
+ * - 查询过滤条件走 URL 参数 query（实测 where 会被忽略），响应: {"offset":0,"limit":N,"list":[...]}
+ * - 更新 body: {"query": {...}, "data": {"$set": {...}}}（必须显式 $set）
  * - 删除: DELETE .../documents/{id}，响应: {"deleted":1}
  */
 object CloudBaseDb {
@@ -30,7 +30,7 @@ object CloudBaseDb {
         return ids.mapNotNull { it.asString }
     }
 
-    /** 查询文档列表，返回文档（已做 EJSON 数字解包）。过滤条件走 URL 参数 query（实测 where 会被忽略）。 */
+    /** 查询文档列表，返回文档（已做 EJSON 数字解包）。过滤条件走 URL 参数 query。 */
     suspend fun queryDocuments(
         client: CloudBaseClient,
         collection: String,
@@ -44,14 +44,6 @@ object CloudBaseDb {
         ) ?: return null
         val list = resp.getAsJsonArray("list") ?: return null
         return list.map { element -> unwrapEjson(element.asJsonObject) }
-    }
-
-    /** 按 _id 删除单个文档。 */
-    suspend fun deleteDocument(client: CloudBaseClient, collection: String, docId: String): Boolean {
-        val resp = client.request(
-            "DELETE", "${dbPath()}/collections/$collection/documents/$docId",
-        ) ?: return false
-        return resp.has("deleted") || resp.has("requestId")
     }
 
     /**
@@ -69,6 +61,14 @@ object CloudBaseDb {
             mapOf("query" to where, "data" to mapOf("\u0024set" to data)),
         ) ?: return null
         return resp.get("updated")?.asInt ?: resp.get("matched")?.asInt
+    }
+
+    /** 按 _id 删除单个文档。 */
+    suspend fun deleteDocument(client: CloudBaseClient, collection: String, docId: String): Boolean {
+        val resp = client.request(
+            "DELETE", "${dbPath()}/collections/$collection/documents/$docId",
+        ) ?: return false
+        return resp.has("deleted") || resp.has("requestId")
     }
 
     /** 把 Strict EJSON 字段解包为普通值（{"$numberLong":"123"} → 123L）。 */
