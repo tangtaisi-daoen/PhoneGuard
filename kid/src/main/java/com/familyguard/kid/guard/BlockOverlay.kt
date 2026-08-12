@@ -1,6 +1,7 @@
 package com.familyguard.kid.guard
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.provider.Settings
@@ -41,6 +42,17 @@ object BlockOverlay {
                 keyCode == KeyEvent.KEYCODE_MENU ||
                 keyCode == KeyEvent.KEYCODE_SEARCH ||
                 keyCode == KeyEvent.KEYCODE_APP_SWITCH
+        }
+
+        // 「返回桌面」按钮：隐藏浮层并回桌面（后续打开受限 app 会再次拦截）
+        overlay.findViewById<View>(R.id.btnGoHome)?.setOnClickListener {
+            hide()
+            runCatching {
+                val home = Intent(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_HOME)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(home)
+            }
         }
 
         val params = WindowManager.LayoutParams(
