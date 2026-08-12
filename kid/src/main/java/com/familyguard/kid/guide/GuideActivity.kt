@@ -38,6 +38,14 @@ class GuideActivity : AppCompatActivity() {
             openOppoAutostartSettings()
         }
         binding.btnAdmin.setOnClickListener { openDeviceAdmin() }
+        binding.btnOverlay.setOnClickListener {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName"),
+            )
+            runCatching { startActivity(intent) }
+                .onFailure { Toast.makeText(this, R.string.guide_open_settings_failed, Toast.LENGTH_SHORT).show() }
+        }
         binding.btnRefreshGuide.setOnClickListener { refresh() }
         refresh()
     }
@@ -52,11 +60,13 @@ class GuideActivity : AppCompatActivity() {
         val a11y = GuardStatus.isAccessibilityEnabled(this)
         val battery = GuardStatus.ignoresBatteryOptimization(this)
         val admin = GuardStatus.isAdminActive(this)
+        val overlay = GuardStatus.canDrawOverlays(this)
         binding.tvUsage.text = getString(if (usage) R.string.guide_ok else R.string.guide_missing)
         binding.tvAccessibility.text = getString(if (a11y) R.string.guide_ok else R.string.guide_missing)
         binding.tvBattery.text = getString(if (battery) R.string.guide_ok else R.string.guide_missing)
         binding.tvAutostart.text = getString(R.string.guide_autostart_manual)
         binding.tvAdmin.text = getString(if (admin) R.string.guide_ok else R.string.guide_missing)
+        binding.tvOverlay.text = getString(if (overlay) R.string.guide_ok else R.string.guide_missing)
     }
 
     /** 激活设备管理器（防卸载）。 */

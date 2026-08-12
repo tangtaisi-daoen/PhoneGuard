@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
         if (SessionStore.isBound) {
             showBound()
+            startHeartbeat()
         } else {
             showUnbound()
         }
@@ -75,8 +76,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 绑定后启动心跳上报服务。 */
+    /** 绑定后启动心跳上报服务（前台服务，Android 8+ 用 startForegroundService）。 */
     private fun startHeartbeat() {
-        startService(Intent(this, HeartbeatService::class.java))
+        val intent = Intent(this, HeartbeatService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
     }
 }

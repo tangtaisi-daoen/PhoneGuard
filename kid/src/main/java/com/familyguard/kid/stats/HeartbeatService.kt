@@ -6,9 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
+import com.familyguard.core.backend.CloudBaseApps
 import com.familyguard.core.backend.CloudBaseAuth
 import com.familyguard.core.backend.CloudBaseEvents
 import com.familyguard.core.backend.CloudBaseRules
@@ -46,9 +49,20 @@ class HeartbeatService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Android 8+ startForegroundService 必须在 5 秒内 startForeground（onCreate 已做，此处兜底）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                startForeground(NOTIFICATION_ID, buildNotification())
+            } catch (_: Exception) {
+            }
+        }
         scope.launch {
             while (isActive) {
-                runHeartbeat()
+                try {
+                    runHeartbeat()
+                } catch (e: Exception) {
+                    // 单次心跳失败不影响循环（防止协程死亡导致心跳永久停止）
+                }
                 delay(HEARTBEAT_INTERVAL_MS)
             }
         }
@@ -105,6 +119,19 @@ class HeartbeatService : Service() {
             UsageStatsCollector.todayDate(), byPackage, total, current,
         )
 
+        // 已装应用列表上报（管理端规则选择用）
+        runCatching {
+            val apps = packageManager.getInstalledApplications(0)
+                .filter { it.packageName !in SystemApps }
+                .mapNotNull { app ->
+                    runCatching {
+                        val name = packageManager.getApplicationLabel(app).toString()
+                        app.packageName to name
+                    }.getOrNull()
+                }
+            CloudBaseApps.upsert(KidApp.client, uid, apps)
+        }
+
         // 防护异常检测
         detectAnomalies(uid)
     }
@@ -138,5 +165,19 @@ class HeartbeatService : Service() {
         private const val HEARTBEAT_INTERVAL_MS = 90_000L
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "guard_foreground"
+
+        /** 系统应用过滤：不参与上报（减少无意义条目）。 */
+        private val SystemApps = setOf(
+            "com.android.systemui",
+            "com.android.settings",
+            "com.android.launcher",
+            "com.android.launcher3",
+            "com.bbk.launcher2",
+            "com.vivo.launcher",
+            "com.oplus.launcher",
+            "com.coloros.launcher",
+            "com.familyguard.kid",
+            "com.familyguard.admin",
+        )
     }
 }

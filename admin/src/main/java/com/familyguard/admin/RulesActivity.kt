@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.familyguard.admin.databinding.ActivityRulesBinding
+import com.familyguard.core.backend.CloudBaseApps
+import com.familyguard.core.backend.CloudBaseBindings
 import com.familyguard.core.backend.CloudBaseRules
 import com.familyguard.core.categories.AppCategory
 import com.familyguard.core.data.AppLimit
@@ -40,6 +42,28 @@ class RulesActivity : AppCompatActivity() {
         val row = layoutInflater.inflate(R.layout.item_app_limit, binding.containerAppLimits, false)
         binding.containerAppLimits.addView(row)
         appLimitRows.add(row)
+        row.findViewById<EditText>(R.id.etPkg).setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) showAppPicker(row)
+        }
+    }
+
+    /** 从被控端已装应用里选择（点击包名输入框触发）。 */
+    private fun showAppPicker(row: View) {
+        val uid = SessionStore.userId ?: return
+        lifecycleScope.launch {
+            val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
+            if (kidId == null) return@launch
+            val apps = CloudBaseApps.fetch(AdminApp.client, kidId)
+            if (apps.isEmpty()) return@launch
+            val names = apps.map { "${it.second}（${it.first}）" }
+            android.app.AlertDialog.Builder(this@RulesActivity)
+                .setTitle(R.string.rules_pick_app)
+                .setItems(names.toTypedArray()) { _, which ->
+                    row.findViewById<EditText>(R.id.etPkg).setText(apps[which].first)
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
     }
 
     /** 供 item_app_limit 的 android:onClick 调用。 */

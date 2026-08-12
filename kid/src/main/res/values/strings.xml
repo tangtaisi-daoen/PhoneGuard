@@ -12,7 +12,11 @@
     <string name="error_bind_failed">绑定失败：邀请码无效或已被使用</string>
     <string name="bind_success">绑定成功</string>
     <string name="accessibility_desc">用于检测并拦截超出使用时长限制的应用（手机守护核心功能）</string>
-    <string name="guide_title">开启防护（共 5 步）</string>
+    <string name="guide_title">开启防护（共 6 步）</string>
+    <string name="guide_overlay">悬浮窗（拦截页面）</string>
+    <string name="overlay_title">手机守护</string>
+    <string name="overlay_hint">使用时间已达上限，今天先休息一下吧</string>
+    <string name="overlay_default_reason">今日使用时间已达上限</string>
     <string name="guide_subtitle">每一步都必须在弟弟手机上开启，否则拦截可能失效</string>
     <string name="guide_usage">使用情况访问</string>
     <string name="guide_accessibility">无障碍服务</string>

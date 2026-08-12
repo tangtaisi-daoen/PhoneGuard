@@ -39,4 +39,8 @@ object GuardStatus {
         val cn = android.content.ComponentName(context, com.familyguard.kid.protect.KidDeviceAdminReceiver::class.java)
         return dpm.isAdminActive(cn)
     }
+
+    /** 悬浮窗权限（拦截浮层需要）。 */
+    fun canDrawOverlays(context: Context): Boolean =
+        android.provider.Settings.canDrawOverlays(context)
 }
