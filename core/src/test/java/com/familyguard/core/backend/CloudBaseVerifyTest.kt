@@ -1,5 +1,10 @@
 package com.familyguard.core.backend
 
+import com.familyguard.core.categories.AppCategory
+import com.familyguard.core.data.AppLimit
+import com.familyguard.core.data.CategoryLimit
+import com.familyguard.core.data.DailyTotalLimit
+import com.familyguard.core.data.RuleSet
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -114,6 +119,39 @@ class CloudBaseVerifyTest {
             assertTrue("刷新后 access_token 应已更新", !client.accessToken.isNullOrBlank() && client.accessToken != "expired.fake.token")
             assertNotNull("refresh_token 应已轮换", client.refreshToken)
             println("自动刷新成功: accessToken 已更新(${client.accessToken!!.take(20)}...), refreshToken 已轮换")
+        }
+    }
+
+    @Test
+    fun step6_rulesRoundtrip() {
+        runBlocking {
+            val signin = CloudBaseAuth.signIn(client, CloudBaseTestConfig.username, CloudBaseTestConfig.password)
+            assertNotNull("登录失败", signin)
+
+            val ruleSet = RuleSet(
+                appLimits = listOf(AppLimit("com.ss.android.ugc.aweme", AppCategory.SHORT_VIDEO, dailyMinutes = 30)),
+                categoryLimits = listOf(CategoryLimit(AppCategory.GAME, dailyMinutes = 60)),
+                dailyTotal = DailyTotalLimit(totalMinutes = 120),
+                version = 1,
+            )
+            val saved = CloudBaseRules.saveRules(client, signin!!.userId, ruleSet)
+            assertTrue("规则保存失败", saved)
+            println("规则保存成功")
+
+            val fetched = CloudBaseRules.fetchRules(client, signin.userId)
+            assertNotNull("规则拉取失败", fetched)
+            println("拉取解析结果: appLimits=${fetched!!.appLimits} categoryLimits=${fetched.categoryLimits} dailyTotal=${fetched.dailyTotal} version=${fetched.version}")
+            assertTrue("appLimits 不一致", fetched.appLimits.size == 1 && fetched.appLimits[0].dailyMinutes == 30)
+            assertTrue("categoryLimits 不一致", fetched.categoryLimits.size == 1 && fetched.categoryLimits[0].dailyMinutes == 60)
+            assertTrue("dailyTotal 不一致", fetched.dailyTotal.totalMinutes == 120)
+            println("规则拉取成功: ${fetched.appLimits.size} app 限制, ${fetched.categoryLimits.size} 类别限制")
+
+            // 清理测试数据
+            val docs = CloudBaseDb.queryDocuments(client, "rules", where = mapOf("adminUid" to signin.userId), limit = 1)
+            docs?.firstOrNull()?.get("_id")?.toString()?.let { docId ->
+                CloudBaseDb.deleteDocument(client, "rules", docId)
+                println("测试数据已清理")
+            }
         }
     }
 

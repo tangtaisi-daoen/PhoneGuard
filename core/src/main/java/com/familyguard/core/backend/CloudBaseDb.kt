@@ -1,7 +1,9 @@
 package com.familyguard.core.backend
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 
 /**
  * CloudBase 文档型数据库 HTTP API（REST，官方 JS SDK 3.x 同款）。
@@ -71,35 +73,52 @@ object CloudBaseDb {
         return resp.has("deleted") || resp.has("requestId")
     }
 
-    /** 把 Strict EJSON 字段解包为普通值（{"$numberLong":"123"} → 123L）。 */
-    private fun unwrapEjson(obj: JsonObject): Map<String, Any?> {
-        val result = mutableMapOf<String, Any?>()
-        for ((k, v) in obj.entrySet()) {
-            result[k] = unwrapValue(v)
-        }
-        return result
-    }
-
-    private fun unwrapValue(v: JsonElement): Any? = when {
+    /** 把 Strict EJSON 解包为普通 JsonElement（递归：$numberLong→Long、$numberInt→Int、数组/对象递归）。 */
+    private fun unwrapElement(v: JsonElement): JsonElement = when {
         v.isJsonObject -> {
             val o = v.asJsonObject
             val n = o.get("\u0024numberLong")
             if (n != null && n.isJsonPrimitive) {
-                n.asString.toLongOrNull() ?: n.asString
+                val l = n.asString.toLongOrNull()
+                if (l != null) JsonPrimitive(l) else JsonPrimitive(n.asString)
             } else {
-                // 其他对象保持原样（_id 等为普通 JSON）
-                v.toString()
+                val i = o.get("\u0024numberInt")
+                if (i != null && i.isJsonPrimitive) {
+                    val v2 = i.asString.toIntOrNull()
+                    if (v2 != null) JsonPrimitive(v2) else JsonPrimitive(i.asString)
+                } else {
+                    val out = JsonObject()
+                    o.entrySet().forEach { (k, vv) -> out.add(k, unwrapElement(vv)) }
+                    out
+                }
             }
         }
-        v.isJsonPrimitive -> {
-            val p = v.asJsonPrimitive
-            when {
-                p.isBoolean -> p.asBoolean
-                p.isNumber -> p.asLong
-                else -> p.asString
+        v.isJsonArray -> {
+            val out = JsonArray()
+            v.asJsonArray.forEach { out.add(unwrapElement(it)) }
+            out
+        }
+        else -> v
+    }
+
+    /** 把文档转成 Map（EJSON 已解包）。 */
+    private fun unwrapEjson(obj: JsonObject): Map<String, Any?> {
+        val unwrapped = unwrapElement(obj).asJsonObject
+        val result = mutableMapOf<String, Any?>()
+        for ((k, v) in unwrapped.entrySet()) {
+            result[k] = when {
+                v.isJsonPrimitive -> {
+                    val p = v.asJsonPrimitive
+                    when {
+                        p.isBoolean -> p.asBoolean
+                        p.isNumber -> p.asLong
+                        else -> p.asString
+                    }
+                }
+                else -> v // JsonObject / JsonArray 保持
             }
         }
-        else -> v.toString()
+        return result
     }
 
     private fun encode(map: Map<String, Any?>): String {
