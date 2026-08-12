@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">手机管控</string>
-    <string name="placeholder_title">管理端</string>
+    <string name="username">用户名</string>
+    <string name="password">密码</string>
+    <string name="login">登录</string>
+    <string name="go_register">还没有账号？去注册</string>
+    <string name="logging_in">登录中…</string>
+    <string name="login_success">登录成功</string>
+    <string name="logout">退出登录</string>
+    <string name="logged_out">已退出登录</string>
+    <string name="error_empty_input">请输入用户名和密码</string>
+    <string name="error_login_failed">登录失败，请检查用户名密码</string>
+    <string name="register_title">注册管理端账号</string>
+    <string name="email">邮箱</string>
+    <string name="verification_code">验证码</string>
+    <string name="send_code">发送验证码</string>
+    <string name="username_hint">小写字母开头，6-25 位（字母/数字/_/-）</string>
+    <string name="password_hint">至少 8 位</string>
+    <string name="register">注册</string>
+    <string name="error_email_invalid">邮箱格式不正确</string>
+    <string name="error_send_code_failed">验证码发送失败，请检查控制台是否开启邮箱登录</string>
+    <string name="code_sent">验证码已发送，请查收邮箱</string>
+    <string name="error_send_code_first">请先发送验证码</string>
+    <string name="error_code_invalid">验证码错误或已过期</string>
+    <string name="error_register_input">请检查输入：邮箱/验证码/用户名(6-25位小写字母开头)/密码(≥8位)</string>
+    <string name="error_register_failed">注册失败（账号可能已存在或网络异常）</string>
+    <string name="register_success">注册成功</string>
+    <string name="welcome_admin">欢迎，%1$s</string>
+    <string name="task4_placeholder">登录成功（邀请码功能开发中）</string>
 </resources>

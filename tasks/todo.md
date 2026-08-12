@@ -4,10 +4,10 @@
 
 ## Phase 1: 仓库骨架与 CloudBase 验证
 
-- [ ] Task 1: 工程骨架（Gradle 三模块 + git init + .gitignore）
-- [ ] Task 2: core 数据模型 + 内置分类表（JUnit）
-- [ ] Task 3: CloudBase 最小接入验证（注册/登录/写读）
-- [x] ~~Checkpoint: build 全绿 + CloudBase 链路通 + 人类评审~~
+- [x] Task 1: 工程骨架（Gradle 三模块 + git init + .gitignore）
+- [x] Task 2: core 数据模型 + 内置分类表（JUnit）
+- [x] Task 3: CloudBase 最小接入验证（注册/登录/写读）
+- [ ] ~~Checkpoint: build 全绿 + CloudBase 链路通 + 人类评审~~（待人类确认）
 
 ## Phase 2: 账号与绑定（M1）
 

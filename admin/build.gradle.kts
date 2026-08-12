@@ -30,6 +30,11 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+    }
+    defaultConfig {
+        // CloudBase 环境 ID（非敏感信息），真实环境配置见 specs/spec.md
+        buildConfigField("String", "CLOUDBASE_ENV_ID", "\"YOUR_ENV_ID\"")
     }
 }
 
@@ -39,5 +44,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
 }
