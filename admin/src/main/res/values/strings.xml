@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">手机管控</string>
+    <string name="placeholder_title">管理端</string>
+</resources>
