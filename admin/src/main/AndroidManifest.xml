@@ -26,6 +26,9 @@
         <activity
             android:name=".DiagActivity"
             android:exported="false" />
+        <activity
+            android:name=".RulesActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

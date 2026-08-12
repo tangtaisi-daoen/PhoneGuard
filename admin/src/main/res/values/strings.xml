@@ -36,4 +36,22 @@
     <string name="error_gen_code_failed">邀请码生成失败，请检查网络</string>
     <string name="diag">诊断</string>
     <string name="diag_run">运行诊断</string>
+    <string name="rules">规则管理</string>
+    <string name="rules_title">使用时长规则</string>
+    <string name="rules_total_title">每日娱乐总额（分钟）</string>
+    <string name="rules_total_minutes">每日总额（0 = 不限制）</string>
+    <string name="rules_category_title">分类限时（分钟，0 = 不限制）</string>
+    <string name="rules_app_title">按应用限时</string>
+    <string name="rules_minutes_hint">分钟</string>
+    <string name="rules_pkg_hint">应用包名</string>
+    <string name="rules_add_app">添加应用限制</string>
+    <string name="rules_save">保存并下发</string>
+    <string name="rules_load">重新加载</string>
+    <string name="rules_remove">删除</string>
+    <string name="rules_saved">规则已保存并下发</string>
+    <string name="rules_save_failed">保存失败，请检查网络</string>
+    <string name="cat_game">游戏</string>
+    <string name="cat_short_video">短视频</string>
+    <string name="cat_video">长视频</string>
+    <string name="cat_social">社交</string>
 </resources>
