@@ -43,13 +43,14 @@
     <string name="rules_category_title">分类限时（分钟，0 = 不限制）</string>
     <string name="rules_app_title">按应用限时</string>
     <string name="rules_minutes_hint">分钟</string>
-    <string name="rules_pkg_hint">应用包名</string>
+    <string name="rules_pkg_hint">应用包名（如 com.xingin.xhs）</string>
     <string name="rules_add_app">添加应用限制</string>
     <string name="rules_save">保存并下发</string>
     <string name="rules_load">重新加载</string>
     <string name="rules_remove">删除</string>
     <string name="rules_saved">规则已保存并下发</string>
     <string name="rules_save_failed">保存失败，请检查网络</string>
+    <string name="rules_pkg_invalid">包名格式不对：请填应用包名（如 com.xingin.xhs），不是应用名称</string>
     <string name="cat_game">游戏</string>
     <string name="cat_short_video">短视频</string>
     <string name="cat_video">长视频</string>

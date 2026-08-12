@@ -55,6 +55,15 @@ class RulesActivity : AppCompatActivity() {
 
     private fun saveRules() {
         val uid = SessionStore.userId ?: return
+        // 包名校验：应用名（中文）不是包名，提示用户
+        val badRows = appLimitRows.filter { row ->
+            val pkg = row.findViewById<EditText>(R.id.etPkg).text?.toString()?.trim().orEmpty()
+            pkg.isNotEmpty() && !PACKAGE_NAME_REGEX.matches(pkg)
+        }
+        if (badRows.isNotEmpty()) {
+            Toast.makeText(this, R.string.rules_pkg_invalid, Toast.LENGTH_LONG).show()
+            return
+        }
         val appLimits = appLimitRows.mapNotNull { row ->
             val pkg = row.findViewById<EditText>(R.id.etPkg).text?.toString()?.trim().orEmpty()
             val minutes = row.findViewById<EditText>(R.id.etMinutes).text?.toString()?.trim()
@@ -122,5 +131,10 @@ class RulesActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        /** 合法包名：小写字母/数字/下划线/点，至少两段。 */
+        private val PACKAGE_NAME_REGEX = Regex("^[a-z][a-z0-9_]*\\.[a-z0-9_.]+$")
     }
 }
