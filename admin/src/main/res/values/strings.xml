@@ -52,6 +52,13 @@
     <string name="rules_save_failed">保存失败，请检查网络</string>
     <string name="rules_pkg_invalid">包名格式不对：请填应用包名（如 com.xingin.xhs），不是应用名称</string>
     <string name="rules_pick_app">从被控端应用中选择（点击包名输入框触发）</string>
+    <string-array name="rules_categories">
+        <item>自动</item>
+        <item>游戏</item>
+        <item>短视频</item>
+        <item>社交</item>
+        <item>不分类</item>
+    </string-array>
     <string name="cat_game">游戏</string>
     <string name="cat_short_video">短视频</string>
     <string name="cat_video">长视频</string>

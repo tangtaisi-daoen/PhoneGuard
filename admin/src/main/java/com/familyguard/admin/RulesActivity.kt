@@ -93,7 +93,7 @@ class RulesActivity : AppCompatActivity() {
             val minutes = row.findViewById<EditText>(R.id.etMinutes).text?.toString()?.trim()
                 .orEmpty().toIntOrNull() ?: 0
             if (pkg.isBlank() || minutes <= 0) null
-            else AppLimit(pkg, AppCategory.OTHER, dailyMinutes = minutes)
+            else AppLimit(pkg, categoryOf(row), dailyMinutes = minutes)
         }
         val categoryLimits = listOf(
             AppCategory.GAME to binding.etGameMinutes,
@@ -123,6 +123,29 @@ class RulesActivity : AppCompatActivity() {
         }
     }
 
+    /** 从 Spinner 读取手动类别；「自动」= 按内置表（OTHER 交给被控端分类）。 */
+    private fun categoryOf(row: View): AppCategory {
+        val spinner = row.findViewById<android.widget.Spinner>(R.id.spCategory) ?: return AppCategory.OTHER
+        return when (spinner.selectedItemPosition) {
+            1 -> AppCategory.GAME
+            2 -> AppCategory.SHORT_VIDEO
+            3 -> AppCategory.SOCIAL
+            else -> AppCategory.OTHER // 0=自动, 4=不分类
+        }
+    }
+
+    private fun setCategoryOf(row: View, category: AppCategory?) {
+        val spinner = row.findViewById<android.widget.Spinner>(R.id.spCategory) ?: return
+        spinner.setSelection(
+            when (category) {
+                AppCategory.GAME -> 1
+                AppCategory.SHORT_VIDEO -> 2
+                AppCategory.SOCIAL -> 3
+                else -> 0
+            },
+        )
+    }
+
     private fun loadRules() {
         val uid = SessionStore.userId ?: return
         lifecycleScope.launch {
@@ -150,6 +173,7 @@ class RulesActivity : AppCompatActivity() {
                     val row = layoutInflater.inflate(R.layout.item_app_limit, binding.containerAppLimits, false)
                     row.findViewById<EditText>(R.id.etPkg).setText(al.packageName)
                     row.findViewById<EditText>(R.id.etMinutes).setText(al.dailyMinutes.toString())
+                    setCategoryOf(row, al.category.takeIf { it != AppCategory.OTHER })
                     binding.containerAppLimits.addView(row)
                     appLimitRows.add(row)
                 }

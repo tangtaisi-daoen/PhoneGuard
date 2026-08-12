@@ -26,11 +26,24 @@ object CategoryRegistry {
         "com.tencent.tmgp.pubgmhd" to AppCategory.GAME, // 和平精英
         "com.tencent.tmgp.jcc" to AppCategory.GAME, // 金铲铲之战
         "com.tencent.tmgp.cf" to AppCategory.GAME, // 穿越火线
+        "com.tencent.tmgp.naruto" to AppCategory.GAME, // 火影忍者手游
+        "com.tencent.KiHan" to AppCategory.GAME, // 火影忍者（腾讯）
+        "com.tencent.gamehelper.pg" to AppCategory.GAME, // 和平营地（和平精英助手）
         "com.miHoYo.Yuanshen" to AppCategory.GAME, // 原神
         "com.miHoYo.hkrpg" to AppCategory.GAME, // 崩坏：星穹铁道
         "com.mojang.minecraftpe" to AppCategory.GAME, // 我的世界
         "com.miniteam.miniworld" to AppCategory.GAME, // 迷你世界
         "com.qqgame.hlddz" to AppCategory.GAME, // 欢乐斗地主
+        // ---- OPPO/ColorOS 游戏生态 ----
+        "com.nearme.gamecenter" to AppCategory.GAME, // OPPO 游戏中心
+        "com.oplus.games" to AppCategory.GAME, // OPPO 游戏助手
+        "com.oplus.play" to AppCategory.GAME, // OPPO 小游戏
+        "com.oplus.gamecenter" to AppCategory.GAME, // ColorOS 游戏中心（新版）
+        // ---- 小米/其他游戏 ----
+        "com.miHoYo.bh3" to AppCategory.GAME, // 崩坏3
+        "com.netease.klzj" to AppCategory.GAME, // 明日之后
+        "com.tencent.tmgp.qqsm" to AppCategory.GAME, // 腾讯赛车
+        "com.hypergryph.arknights" to AppCategory.GAME, // 明日方舟
         // ---- 社交 ----
         "com.tencent.mm" to AppCategory.SOCIAL, // 微信
         "com.tencent.mobileqq" to AppCategory.SOCIAL, // QQ
