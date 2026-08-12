@@ -1,5 +1,6 @@
 package com.familyguard.kid
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,6 +10,7 @@ import com.familyguard.core.backend.CloudBaseAuth
 import com.familyguard.core.backend.CloudBaseBindings
 import com.familyguard.core.session.SessionStore
 import com.familyguard.kid.databinding.ActivityMainBinding
+import com.familyguard.kid.stats.HeartbeatService
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -58,11 +60,17 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     SessionStore.saveBinding(code, result.adminUid)
                     Toast.makeText(this@MainActivity, R.string.bind_success, Toast.LENGTH_SHORT).show()
+                    startHeartbeat()
                     showBound()
                 }
             }
             binding.btnBind.isEnabled = true
             binding.btnBind.text = getString(R.string.bind)
         }
+    }
+
+    /** 绑定后启动心跳上报服务。 */
+    private fun startHeartbeat() {
+        startService(Intent(this, HeartbeatService::class.java))
     }
 }

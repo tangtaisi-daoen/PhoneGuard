@@ -6,6 +6,7 @@ import com.familyguard.core.data.CategoryLimit
 import com.familyguard.core.data.DailyTotalLimit
 import com.familyguard.core.data.RuleSet
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -150,6 +151,40 @@ class CloudBaseVerifyTest {
             val docs = CloudBaseDb.queryDocuments(client, "rules", where = mapOf("adminUid" to signin.userId), limit = 1)
             docs?.firstOrNull()?.get("_id")?.toString()?.let { docId ->
                 CloudBaseDb.deleteDocument(client, "rules", docId)
+                println("测试数据已清理")
+            }
+        }
+    }
+
+    @Test
+    fun step7_usageHeartbeat() {
+        runBlocking {
+            // 匿名登录（模拟被控端）
+            val auth = CloudBaseAuth.signInAnonymously(client, "verify-device-${System.currentTimeMillis()}")
+            assertNotNull("匿名登录失败", auth)
+
+            val byPackage = mapOf(
+                "com.tencent.mm" to 12L,
+                "com.ss.android.ugc.aweme" to 30L,
+                "com.tencent.tmgp.sgame" to 45L,
+            )
+            val ok = CloudBaseUsage.upsertHeartbeat(
+                client, auth!!.userId, "2026-08-12", byPackage, byPackage.values.sum(), "com.tencent.mm",
+            )
+            assertTrue("心跳上报失败", ok)
+            println("心跳上报成功")
+
+            val snapshot = CloudBaseUsage.fetchLatest(client, auth.userId)
+            assertNotNull("快照拉取失败", snapshot)
+            assertTrue("byPackage 不一致", snapshot!!.byPackage == byPackage)
+            assertTrue("totalMinutes 不一致", snapshot.totalMinutes == 87L)
+            assertEquals("currentApp 不一致", "com.tencent.mm", snapshot.currentApp)
+            println("快照拉取成功: total=${snapshot.totalMinutes} 分钟, currentApp=${snapshot.currentApp}")
+
+            // 清理
+            val docs = CloudBaseDb.queryDocuments(client, "usage", where = mapOf("kidDeviceId" to auth.userId), limit = 1)
+            docs?.firstOrNull()?.get("_id")?.toString()?.let { docId ->
+                CloudBaseDb.deleteDocument(client, "usage", docId)
                 println("测试数据已清理")
             }
         }
