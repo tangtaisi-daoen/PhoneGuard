@@ -21,6 +21,7 @@ import com.familyguard.core.session.SessionStore
 import com.familyguard.kid.KidApp
 import com.familyguard.kid.MainActivity
 import com.familyguard.kid.R
+import com.familyguard.kid.guard.GuardAccessibilityService
 import com.familyguard.kid.guide.GuardStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -142,7 +143,13 @@ class HeartbeatService : Service() {
             CloudBaseEvents.report(KidApp.client, uid, "PERMISSION_DISABLED", "使用情况访问权限已被关闭，统计将失效")
         }
         if (!GuardStatus.isAccessibilityEnabled(this)) {
-            CloudBaseEvents.report(KidApp.client, uid, "PERMISSION_DISABLED", "无障碍服务已被关闭，实时拦截失效")
+            // 借鉴 Chastify：拥有 WRITE_SECURE_SETTINGS 时尝试自动恢复无障碍
+            val restored = tryRestoreAccessibility()
+            if (restored) {
+                CloudBaseEvents.report(KidApp.client, uid, "PERMISSION_DISABLED", "无障碍服务曾被关闭，已自动恢复")
+            } else {
+                CloudBaseEvents.report(KidApp.client, uid, "PERMISSION_DISABLED", "无障碍服务已被关闭，实时拦截失效")
+            }
         }
         if (!isAdminActive()) {
             CloudBaseEvents.report(KidApp.client, uid, "ADMIN_DISABLED", "设备管理器未激活，防卸载保护未生效")
@@ -153,6 +160,26 @@ class HeartbeatService : Service() {
             CloudBaseEvents.report(KidApp.client, uid, "TIME_CHANGED", "检测到系统时间被回拨，可能试图绕过时长限制")
         }
         lastDeviceTimeMs = now
+        HeartbeatState.touch()
+    }
+
+    /** 尝试自动恢复无障碍服务（需要 WRITE_SECURE_SETTINGS 权限，ADB 一次性授权）。 */
+    private fun tryRestoreAccessibility(): Boolean {
+        return runCatching {
+            val cn = ComponentName(this, GuardAccessibilityService::class.java).flattenToString()
+            val existing = android.provider.Settings.Secure.getString(
+                contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+            ) ?: ""
+            val updated = if (existing.isBlank()) cn else "$existing:$cn"
+            if (existing.split(':').any { it.equals(cn, ignoreCase = true) }) return true
+            android.provider.Settings.Secure.putString(
+                contentResolver, android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, updated,
+            )
+            android.provider.Settings.Secure.putString(
+                contentResolver, android.provider.Settings.Secure.ACCESSIBILITY_ENABLED, "1",
+            )
+            true
+        }.getOrDefault(false)
     }
 
     private fun isAdminActive(): Boolean {
