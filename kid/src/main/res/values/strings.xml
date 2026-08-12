@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">手机守护</string>
-    <string name="placeholder_title">被控端</string>
+    <string name="bind_title">输入哥哥的邀请码</string>
+    <string name="invite_code">6 位邀请码</string>
+    <string name="bind">绑定</string>
+    <string name="binding">绑定中…</string>
+    <string name="bound_status">已绑定，守护生效中</string>
+    <string name="bound_placeholder">防护功能开发中，请等待更新</string>
+    <string name="error_code_format">邀请码应为 6 位</string>
+    <string name="error_anon_failed">网络异常，请重试</string>
+    <string name="error_bind_failed">绑定失败：邀请码无效或已被使用</string>
+    <string name="bind_success">绑定成功</string>
 </resources>
