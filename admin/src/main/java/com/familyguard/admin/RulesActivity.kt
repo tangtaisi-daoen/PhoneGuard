@@ -42,9 +42,7 @@ class RulesActivity : AppCompatActivity() {
         val row = layoutInflater.inflate(R.layout.item_app_limit, binding.containerAppLimits, false)
         binding.containerAppLimits.addView(row)
         appLimitRows.add(row)
-        row.findViewById<EditText>(R.id.etPkg).setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) showAppPicker(row)
-        }
+        row.findViewById<EditText>(R.id.etPkg).setOnClickListener { showAppPicker(row) }
     }
 
     /** 从被控端已装应用里选择（点击包名输入框触发）。 */
