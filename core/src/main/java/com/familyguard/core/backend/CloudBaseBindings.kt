@@ -77,6 +77,17 @@ object CloudBaseBindings {
         ) ?: return null
         return matched.firstOrNull()?.get("inviteCode")?.toString()
     }
+
+    /** 查询管理端当前已绑定的被控端设备 id。 */
+    suspend fun getBoundKidDeviceId(client: CloudBaseClient, adminUid: String): String? {
+        val matched = CloudBaseDb.queryDocuments(
+            client, COLLECTION,
+            where = mapOf("adminUid" to adminUid, "status" to "BOUND"),
+            limit = 1,
+        ) ?: return null
+        val doc = matched.firstOrNull() ?: return null
+        return doc["kidDeviceId"]?.toString()?.takeIf { it.isNotBlank() }
+    }
 }
 
 /** 绑定结果。 */

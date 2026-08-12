@@ -54,4 +54,18 @@
     <string name="cat_short_video">短视频</string>
     <string name="cat_video">长视频</string>
     <string name="cat_social">社交</string>
+    <string name="cat_tool">工具</string>
+    <string name="cat_other">未分类</string>
+    <string name="monitor">使用报告</string>
+    <string name="monitor_loading">加载中…</string>
+    <string name="monitor_not_bound">还没有绑定被控端，先去生成邀请码让弟弟绑定</string>
+    <string name="monitor_no_data">被控端还没有上报数据（等下一次心跳，最多 2 分钟）</string>
+    <string name="monitor_online">在线</string>
+    <string name="monitor_offline">离线</string>
+    <string name="monitor_no_app">无前台应用</string>
+    <string name="monitor_status">被控端：%1$s\n当前使用：%2$s\n数据日期：%3$s</string>
+    <string name="monitor_total">今日总时长：</string>
+    <string name="monitor_by_category">按类别：</string>
+    <string name="unit_minutes"> 分钟</string>
+    <string name="monitor_refresh">刷新</string>
 </resources>

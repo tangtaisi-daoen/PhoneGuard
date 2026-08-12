@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnRules.setOnClickListener {
             startActivity(Intent(this, RulesActivity::class.java))
         }
+        binding.btnMonitor.setOnClickListener {
+            startActivity(Intent(this, MonitorActivity::class.java))
+        }
         binding.btnRefreshCode.setOnClickListener { generateInviteCode() }
         binding.btnCopyCode.setOnClickListener { copyInviteCode() }
         binding.tvInviteCode.setOnClickListener { copyInviteCode() }
