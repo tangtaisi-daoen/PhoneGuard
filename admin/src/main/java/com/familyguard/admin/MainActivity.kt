@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             startService(Intent(this, AdminNotifyService::class.java))
             Toast.makeText(this, R.string.start_notify, Toast.LENGTH_SHORT).show()
         }
-        binding.btnRefreshCode.setOnClickListener { generateInviteCode() }
+        binding.btnRefreshCode.setOnClickListener { confirmRefreshCode() }
         binding.btnCopyCode.setOnClickListener { copyInviteCode() }
         binding.tvInviteCode.setOnClickListener { copyInviteCode() }
 
@@ -72,6 +72,16 @@ class MainActivity : AppCompatActivity() {
             }
             binding.btnRefreshCode.isEnabled = true
         }
+    }
+
+    /** 刷新邀请码前确认（防止误触导致旧码失效）。 */
+    private fun confirmRefreshCode() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.refresh_code_confirm_title)
+            .setMessage(R.string.refresh_code_confirm_msg)
+            .setPositiveButton(R.string.refresh_code_confirm_ok) { _, _ -> generateInviteCode() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun generateInviteCode() {
