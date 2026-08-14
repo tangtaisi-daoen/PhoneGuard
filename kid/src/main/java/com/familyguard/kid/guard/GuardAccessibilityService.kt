@@ -12,7 +12,6 @@ import com.familyguard.core.categories.CategoryRegistry
 import com.familyguard.core.rules.RulesEngine
 import com.familyguard.core.session.RuleCacheStore
 import com.familyguard.core.session.SessionStore
-import com.familyguard.kid.BuildConfig
 import com.familyguard.kid.R
 import com.familyguard.kid.guide.GuardStatus
 import com.familyguard.kid.stats.UsageStatsCollector
@@ -91,7 +90,7 @@ class GuardAccessibilityService : AccessibilityService() {
         }
         lastForegroundPackage = pkg
         AccessibilityHealthStore.markEvent(this)
-        if (BuildConfig.DEBUG) android.util.Log.d(TAG, "event: $pkg")
+        android.util.Log.d(TAG, "event: $pkg")
         val root = rootInActiveWindow ?: event.source
         if (SessionStore.isBound && root != null &&
             blockProtectionPageIfNeeded(pkg, event.className?.toString().orEmpty(), root)
@@ -181,7 +180,7 @@ class GuardAccessibilityService : AccessibilityService() {
         }
         val rules = RuleCacheStore.rules
         if (rules == null) {
-            if (BuildConfig.DEBUG) android.util.Log.w(TAG, "no rules cached, skip")
+            android.util.Log.w(TAG, "no rules cached, skip")
             return
         }
         val category = CategoryRegistry.classify(pkg)
@@ -204,9 +203,7 @@ class GuardAccessibilityService : AccessibilityService() {
                 RuleCacheStore.envelope?.activeAllowanceMinutes(pkg, System.currentTimeMillis()) ?: 0
                 ) * 60_000L,
         )
-        if (BuildConfig.DEBUG) {
-            android.util.Log.d(TAG, "$pkg verdict: blocked=${verdict.blocked} reason=${verdict.reason} rulesV=${rules.version} appLimits=${rules.appLimits}")
-        }
+        android.util.Log.d(TAG, "$pkg verdict: blocked=${verdict.blocked} reason=${verdict.reason} rulesV=${rules.version} appLimits=${rules.appLimits}")
 
         if (verdict.blocked) {
             // 全屏拦截：浮层 + 拦截 Activity 抢占前台（借鉴 cst；游戏无法压制 Activity）

@@ -20,7 +20,7 @@ class PackageAddedReceiver : BroadcastReceiver() {
         if (pkg == context.packageName) return
         CoroutineScope(Dispatchers.IO).launch {
             val auth = CloudBaseAuth.signInAnonymously(KidApp.client, SessionStore.deviceId) ?: return@launch
-            CloudBaseEvents.report(KidApp.client, auth.userId, "NEW_APP", "安装了新应用：$pkg", adminUid = SessionStore.boundAdminUid)
+            CloudBaseEvents.report(KidApp.client, auth.userId, "NEW_APP", "安装了新应用：$pkg")
         }
     }
 }

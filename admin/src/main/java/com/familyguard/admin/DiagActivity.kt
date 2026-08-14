@@ -42,8 +42,7 @@ class DiagActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val sb = StringBuilder()
             val before = System.currentTimeMillis()
-            val uid = SessionStore.userId.orEmpty()
-            val docs = CloudBaseDb.queryDocuments(AdminApp.client, "bindings", where = mapOf("adminUid" to uid), limit = 1)
+            val docs = CloudBaseDb.queryDocuments(AdminApp.client, "bindings", limit = 1)
             val cost = System.currentTimeMillis() - before
             sb.append("请求 bindings 集合: ")
             if (docs != null) {

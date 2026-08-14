@@ -11,7 +11,6 @@ import com.familyguard.core.update.UpdateHttpClient
 import com.familyguard.core.update.UpdateManifest
 import com.familyguard.core.update.UpdateManifestCheck
 import com.familyguard.core.update.UpdateManifestVerifier
-import com.familyguard.kid.BuildConfig
 import java.io.File
 import java.security.MessageDigest
 import java.util.Base64
@@ -30,8 +29,8 @@ sealed interface KidUpdateAvailability {
 
 object KidUpdateManager {
     const val ACTION_CHECK_UPDATE = "com.familyguard.kid.action.CHECK_UPDATE"
-    // 自托管：构建时注入（-PupdateManifestUrl）；占位符时禁用更新检查
-    private val MANIFEST_URL: String? = BuildConfig.UPDATE_MANIFEST_URL.takeIf { !it.startsWith("YOUR_") }
+    private const val MANIFEST_URL =
+        "https://YOUR_ENV_ID-0000000000.tcloudbaseapp.com/phoneguard/kid/stable/update-manifest.json"
     private const val EXPECTED_PACKAGE = "com.familyguard.kid"
     private const val MAX_APK_OVERHEAD_BYTES = 1024L
     private const val UPDATE_DIRECTORY = "verified-updates"
@@ -40,8 +39,7 @@ object KidUpdateManager {
         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEm0Oju++9WsBDfX15UJhPjNt/wGmU9ApxjOaNToumWxCl0RY8iSto0vgmIVzhAaXE3/BuZKUunx9n1Ud9C06ObA=="
 
     suspend fun checkAvailability(context: Context): KidUpdateAvailability {
-        val url = MANIFEST_URL ?: return KidUpdateAvailability.Failed("未配置更新清单地址（自托管需构建注入）")
-        val manifest = UpdateHttpClient.fetchManifest(url)
+        val manifest = UpdateHttpClient.fetchManifest(MANIFEST_URL)
             ?: return KidUpdateAvailability.Failed("无法获取更新清单")
         val check = UpdateManifestVerifier.verify(
             manifest,
@@ -58,8 +56,7 @@ object KidUpdateManager {
     }
 
     suspend fun checkAndDownload(context: Context): KidUpdateResult {
-        val url = MANIFEST_URL ?: return KidUpdateResult.Failed("未配置更新清单地址（自托管需构建注入）")
-        val manifest = UpdateHttpClient.fetchManifest(url)
+        val manifest = UpdateHttpClient.fetchManifest(MANIFEST_URL)
             ?: return KidUpdateResult.Failed("无法获取更新清单")
         val installed = installedVersionCode(context)
         val check = UpdateManifestVerifier.verify(

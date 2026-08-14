@@ -132,9 +132,11 @@ class HeartbeatService : Service() {
         val auth = CloudBaseAuth.signInAnonymously(KidApp.client, SessionStore.deviceId) ?: return
         val uid = auth.userId
 
-        // 同步刷新规则缓存（拦截服务使用，断网兜底旧规则）；按被控端匿名 uid 拉取（安全规则放行）
-        CloudBaseRules.fetchEnvelopeForKid(KidApp.client, uid)?.let { envelope ->
-            RuleCacheStore.save(envelope)
+        // 同步刷新规则缓存（拦截服务使用，断网兜底旧规则）
+        SessionStore.boundAdminUid?.let { adminUid ->
+            CloudBaseRules.fetchEnvelope(KidApp.client, adminUid)?.let { envelope ->
+                RuleCacheStore.save(envelope)
+            }
         }
 
         val apps = UsageStatsCollector.visibleInstalledApps(this)
@@ -168,7 +170,6 @@ class HeartbeatService : Service() {
         CloudBaseUsage.upsertHeartbeat(
             KidApp.client, uid,
             UsageStatsCollector.todayDate(), byPackage, total, current,
-            adminUid = SessionStore.boundAdminUid,
             appliedRuleRevision = ruleEnvelope?.revision ?: 0L,
             evaluatedLocalDate = evaluatedDate.toString(),
             evaluatedProfile = ruleEnvelope?.profileFor(evaluatedDate)?.name.orEmpty(),
@@ -204,7 +205,7 @@ class HeartbeatService : Service() {
 
         // 已装应用列表上报（管理端规则选择用）
         runCatching {
-            CloudBaseApps.upsert(KidApp.client, uid, apps, adminUid = SessionStore.boundAdminUid)
+            CloudBaseApps.upsert(KidApp.client, uid, apps)
         }
 
         // 防护异常检测
@@ -355,7 +356,6 @@ class HeartbeatService : Service() {
                 uid,
                 activeConditions,
                 MANAGED_HEALTH_INCIDENT_TYPES,
-                adminUid = SessionStore.boundAdminUid,
             )
         ) {
             lastHealthConditions = activeConditions.toMap()
@@ -406,7 +406,7 @@ class HeartbeatService : Service() {
 
     private suspend fun reportProtectionAttempt(uid: String) {
         val attempt = ProtectionAttemptStore.pending(this) ?: return
-        if (CloudBaseEvents.report(KidApp.client, uid, attempt.type, attempt.message, adminUid = SessionStore.boundAdminUid)) {
+        if (CloudBaseEvents.report(KidApp.client, uid, attempt.type, attempt.message)) {
             ProtectionAttemptStore.clear(this)
         }
     }
@@ -415,7 +415,7 @@ class HeartbeatService : Service() {
         val now = System.currentTimeMillis()
         val previous = lastAnomalyReportedAt[type] ?: 0L
         if (now - previous < ANOMALY_REPORT_INTERVAL_MS) return
-        if (CloudBaseEvents.report(KidApp.client, uid, type, message, adminUid = SessionStore.boundAdminUid)) {
+        if (CloudBaseEvents.report(KidApp.client, uid, type, message)) {
             lastAnomalyReportedAt[type] = now
         }
     }

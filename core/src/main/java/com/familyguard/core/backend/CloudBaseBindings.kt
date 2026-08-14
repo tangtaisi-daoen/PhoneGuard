@@ -16,12 +16,8 @@ object CloudBaseBindings {
     private const val CODE_CHARS = "abcdefghjkmnpqrstuvwxyz23456789"
     private const val CODE_LENGTH = 6
 
-    /** 邀请码有效期：7 天（防长期泄露的旧码被利用；过期后需重新生成）。 */
-    private const val INVITE_CODE_TTL_MS = 7L * 24 * 60 * 60 * 1000L
-
-    /** 生成 6 位邀请码并写入 bindings（自动重试避免碰撞；生成前使旧 PENDING 码失效）。 */
+    /** 生成 6 位邀请码并写入 bindings（自动重试避免碰撞）。 */
     suspend fun generateInviteCode(client: CloudBaseClient, adminUid: String): String? {
-        expirePendingCodes(client, adminUid)
         repeat(10) {
             val code = (1..CODE_LENGTH).map { CODE_CHARS.random() }.joinToString("")
             val exists = CloudBaseDb.queryDocuments(
@@ -39,7 +35,6 @@ object CloudBaseBindings {
                             "status" to "PENDING",
                             "createdAt" to System.currentTimeMillis(),
                             "boundAt" to 0L,
-                            "expiresAt" to System.currentTimeMillis() + INVITE_CODE_TTL_MS,
                         ),
                     ),
                 )
@@ -47,17 +42,6 @@ object CloudBaseBindings {
             }
         }
         return null
-    }
-
-    /** 使该管理员所有旧 PENDING 邀请码失效（防旧码长期有效）。 */
-    private suspend fun expirePendingCodes(client: CloudBaseClient, adminUid: String) {
-        val updated = CloudBaseDb.updateDocuments(
-            client, COLLECTION,
-            where = mapOf("adminUid" to adminUid, "status" to "PENDING"),
-            data = mapOf("status" to "EXPIRED"),
-        )
-        // updated == null 表示请求失败（网络等）；静默容忍，下次生成时再试。
-        if (updated == null) return
     }
 
     /** 被控端用邀请码绑定；返回绑定信息（adminUid 等），失败返回 null。 */
@@ -69,7 +53,6 @@ object CloudBaseBindings {
         ) ?: return null
         if (matched.isEmpty()) return null
         val doc = matched.first()
-        if (!isBindingEligible(doc, System.currentTimeMillis())) return null
         val docId = doc["_id"]?.toString() ?: return null
         val adminUid = doc["adminUid"]?.toString() ?: return null
         val updated = CloudBaseDb.updateDocuments(
@@ -85,35 +68,15 @@ object CloudBaseBindings {
         return BindingResult(inviteCode, adminUid, docId)
     }
 
-    /**
-     * 绑定候选判定：PENDING 且未过期（expiresAt 缺失/0 视为不过期，兼容旧文档）。
-     */
-    internal fun isBindingEligible(doc: Map<String, Any?>, now: Long): Boolean {
-        if (doc["status"]?.toString() != "PENDING") return false
-        val expiresAt = doc["expiresAt"]?.toString()?.toLongOrNull() ?: 0L
-        return expiresAt <= 0L || expiresAt > now
-    }
-
-    /** 查询管理端当前生效的邀请码（最近创建的一条，本地排序避免依赖服务端默认顺序）。 */
+    /** 查询管理端当前生效的邀请码（最近创建的一条）。 */
     suspend fun getMyInviteCode(client: CloudBaseClient, adminUid: String): String? {
         val matched = CloudBaseDb.queryDocuments(
             client, COLLECTION,
             where = mapOf("adminUid" to adminUid),
-            limit = 100,
+            limit = 1,
         ) ?: return null
-        return selectLatestInviteCode(matched)
+        return matched.firstOrNull()?.get("inviteCode")?.toString()
     }
-
-    /** 从同一管理员的邀请码历史中选择最近创建的一条（按 createdAt 取最大）。 */
-    internal fun selectLatestInviteCode(rows: List<Map<String, Any?>>): String? =
-        rows.asSequence()
-            .mapNotNull { row ->
-                val code = row["inviteCode"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                val createdAt = row["createdAt"]?.toString()?.toLongOrNull() ?: 0L
-                createdAt to code
-            }
-            .maxByOrNull { it.first }
-            ?.second
 
     /** 查询管理端当前已绑定的被控端设备 id。 */
     suspend fun getBoundKidDeviceId(client: CloudBaseClient, adminUid: String): String? {

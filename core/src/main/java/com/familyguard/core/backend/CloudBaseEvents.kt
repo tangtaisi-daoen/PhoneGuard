@@ -25,7 +25,6 @@ object CloudBaseEvents {
         kidDeviceId: String,
         type: String,
         message: String,
-        adminUid: String? = null,
     ): Boolean {
         val now = System.currentTimeMillis()
         val existingDocs = CloudBaseDb.queryDocuments(
@@ -42,14 +41,14 @@ object CloudBaseEvents {
             return !CloudBaseDb.insertDocuments(
                 client,
                 COLLECTION,
-                listOf(incidentDocument(kidDeviceId, next, adminUid)),
+                listOf(incidentDocument(kidDeviceId, next)),
             ).isNullOrEmpty()
         }
         val updated = CloudBaseDb.updateDocuments(
             client,
             COLLECTION,
             where = mapOf("_id" to existing.id),
-            data = incidentDocument(kidDeviceId, next, adminUid),
+            data = incidentDocument(kidDeviceId, next),
         )
         return updated != null && updated > 0
     }
@@ -141,7 +140,6 @@ object CloudBaseEvents {
         activeConditions: Map<String, String>,
         managedTypes: Set<String>,
         refreshIntervalMs: Long = 5 * 60_000L,
-        adminUid: String? = null,
     ): Boolean {
         val docs = CloudBaseDb.queryDocuments(
             client,
@@ -161,14 +159,14 @@ object CloudBaseEvents {
                 !CloudBaseDb.insertDocuments(
                     client,
                     COLLECTION,
-                    listOf(incidentDocument(kidDeviceId, incident, adminUid)),
+                    listOf(incidentDocument(kidDeviceId, incident)),
                 ).isNullOrEmpty()
             } else {
                 val updated = CloudBaseDb.updateDocuments(
                     client,
                     COLLECTION,
                     where = mapOf("_id" to incident.id),
-                    data = incidentDocument(kidDeviceId, incident, adminUid),
+                    data = incidentDocument(kidDeviceId, incident),
                 )
                 updated != null && updated > 0
             }
@@ -178,7 +176,7 @@ object CloudBaseEvents {
                 client,
                 COLLECTION,
                 where = mapOf("_id" to incident.id),
-                data = incidentDocument(kidDeviceId, incident, adminUid),
+                data = incidentDocument(kidDeviceId, incident),
             )
             updated != null && updated > 0
         }
@@ -186,29 +184,20 @@ object CloudBaseEvents {
     }
 }
 
-internal fun incidentDocument(
-    kidDeviceId: String,
-    incident: AnomalyEvent,
-    adminUid: String? = null,
-): Map<String, Any?> {
-    val doc = mutableMapOf<String, Any?>(
-        "kidDeviceId" to kidDeviceId,
-        "type" to incident.type,
-        "message" to incident.message,
-        "occurredAt" to incident.occurredAt,
-        "dedupKey" to incident.dedupKey,
-        "status" to incident.status.name,
-        "firstSeenAt" to incident.firstSeenAt,
-        "lastSeenAt" to incident.lastSeenAt,
-        "acknowledgedAt" to incident.acknowledgedAt,
-        "resolvedAt" to incident.resolvedAt,
-        "occurrenceCount" to incident.occurrenceCount,
-        "read" to incident.read,
-    )
-    // 归属字段（安全规则按 doc.adminUid 放行管理员读取；仅绑定后非空）
-    if (!adminUid.isNullOrBlank()) doc["adminUid"] = adminUid
-    return doc
-}
+internal fun incidentDocument(kidDeviceId: String, incident: AnomalyEvent): Map<String, Any?> = mapOf(
+    "kidDeviceId" to kidDeviceId,
+    "type" to incident.type,
+    "message" to incident.message,
+    "occurredAt" to incident.occurredAt,
+    "dedupKey" to incident.dedupKey,
+    "status" to incident.status.name,
+    "firstSeenAt" to incident.firstSeenAt,
+    "lastSeenAt" to incident.lastSeenAt,
+    "acknowledgedAt" to incident.acknowledgedAt,
+    "resolvedAt" to incident.resolvedAt,
+    "occurrenceCount" to incident.occurrenceCount,
+    "read" to incident.read,
+)
 
 internal fun incidentFromDocument(doc: Map<String, Any?>): AnomalyEvent? {
     val type = doc["type"]?.toString() ?: return null
