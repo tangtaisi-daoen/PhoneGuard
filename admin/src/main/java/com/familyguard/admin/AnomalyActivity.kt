@@ -39,7 +39,7 @@ class AnomalyActivity : AppCompatActivity() {
                 binding.btnAcknowledgeAnomaly.isEnabled = false
                 return@launch
             }
-            val all = CloudBaseEvents.fetchAllOrNull(AdminApp.client, kidId, limit = 50, adminUid = uid)
+            val all = CloudBaseEvents.fetchAllOrNull(AdminApp.client, kidId, limit = 50)
             if (all == null) {
                 binding.tvAnomalySummary.text = getString(R.string.anomaly_failed)
                 binding.tvAnomalyList.text = ""
@@ -97,7 +97,7 @@ class AnomalyActivity : AppCompatActivity() {
         binding.btnAcknowledgeAnomaly.isEnabled = false
         lifecycleScope.launch {
             val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
-            val ok = kidId != null && CloudBaseEvents.acknowledgeOpen(AdminApp.client, kidId, adminUid = uid)
+            val ok = kidId != null && CloudBaseEvents.acknowledgeOpen(AdminApp.client, kidId)
             android.widget.Toast.makeText(
                 this@AnomalyActivity,
                 if (ok) R.string.anomaly_acknowledged else R.string.anomaly_ack_failed,

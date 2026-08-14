@@ -116,7 +116,7 @@ class RulesActivity : AppCompatActivity() {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_not_bound, Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId, adminUid = uid)
+            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId)
             pickerLoading = false
             if (apps == null) {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_failed, Toast.LENGTH_SHORT).show()
@@ -334,7 +334,7 @@ class RulesActivity : AppCompatActivity() {
         pickerLoading = true
         lifecycleScope.launch {
             val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
-            val apps = kidId?.let { CloudBaseApps.fetchOrNull(AdminApp.client, it, adminUid = uid) }
+            val apps = kidId?.let { CloudBaseApps.fetchOrNull(AdminApp.client, it) }
             pickerLoading = false
             if (apps.isNullOrEmpty()) {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_empty, Toast.LENGTH_SHORT).show()
@@ -407,7 +407,7 @@ class RulesActivity : AppCompatActivity() {
     private fun refreshKnownAppNames(uid: String) {
         lifecycleScope.launch {
             val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid) ?: return@launch
-            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId, adminUid = uid) ?: return@launch
+            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId) ?: return@launch
             knownApps = apps.toMap()
             var changed = false
             adapter.rows.forEach { row ->

@@ -52,17 +52,15 @@ object CloudBaseApps {
         }
     }
 
-    /** 拉取被控端已装应用列表（管理端用）。adminUid 供管理端查询。 */
-    suspend fun fetch(client: CloudBaseClient, kidDeviceId: String, adminUid: String? = null): List<Pair<String, String>> {
-        return fetchOrNull(client, kidDeviceId, adminUid).orEmpty()
+    /** 拉取被控端已装应用列表（管理端用）。 */
+    suspend fun fetch(client: CloudBaseClient, kidDeviceId: String): List<Pair<String, String>> {
+        return fetchOrNull(client, kidDeviceId).orEmpty()
     }
 
-    /** 拉取被控端应用；查询失败返回 null，无上报数据返回空列表。adminUid 供管理端查询。 */
-    suspend fun fetchOrNull(client: CloudBaseClient, kidDeviceId: String, adminUid: String? = null): List<Pair<String, String>>? {
-        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
-        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
+    /** 拉取被控端应用；查询失败返回 null，无上报数据返回空列表。 */
+    suspend fun fetchOrNull(client: CloudBaseClient, kidDeviceId: String): List<Pair<String, String>>? {
         val docs = CloudBaseDb.queryDocuments(
-            client, COLLECTION, where = where, limit = 1,
+            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = 1,
         ) ?: return null
         val doc = docs.firstOrNull() ?: return emptyList()
         val arr = doc["apps"] as? JsonArray ?: return emptyList()
