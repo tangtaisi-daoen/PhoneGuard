@@ -25,6 +25,7 @@ object CloudBaseUsage {
         byPackage: Map<String, Long>,
         totalMinutes: Long,
         currentApp: String?,
+        adminUid: String? = null,
         appliedRuleRevision: Long = 0L,
         evaluatedLocalDate: String = "",
         evaluatedProfile: String = "",
@@ -59,7 +60,7 @@ object CloudBaseUsage {
             client, COLLECTION,
             where = mapOf("kidDeviceId" to kidDeviceId, "date" to date), limit = 1,
         ) ?: return false
-        val data = mapOf(
+        val data = mutableMapOf<String, Any?>(
             "byPackage" to byPackage,
             "totalMinutes" to totalMinutes,
             "currentApp" to (currentApp ?: ""),
@@ -94,6 +95,8 @@ object CloudBaseUsage {
             "availableStorageBytes" to availableStorageBytes,
             "deviceUptimeMs" to deviceUptimeMs,
         )
+        // 归属字段（安全规则按 doc.adminUid 放行管理员读取；仅绑定后非空）
+        if (!adminUid.isNullOrBlank()) data["adminUid"] = adminUid
         return if (existing.isEmpty()) {
             val doc = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "date" to date)
             doc.putAll(data)

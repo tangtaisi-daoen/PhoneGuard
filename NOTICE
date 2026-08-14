@@ -1,0 +1,43 @@
+PhoneGuard
+Copyright (C) 2026 PhoneGuard 项目贡献者
+
+本程序是自由软件：您可以依据自由软件基金会发布的 GNU Affero 通用公共许可证
+（AGPL）第 3 版或（由您选择）任何更新版本重新分发和/或修改本程序。
+
+本程序分发的目的是希望它有用，但没有任何担保；甚至没有适销性或特定用途适用
+性的隐含担保。详情请参阅 GNU Affero 通用公共许可证。
+
+您应已收到一份 GNU Affero 通用公共许可证副本；如果没有，请访问
+<https://www.gnu.org/licenses/>。
+
+英文原文：
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+------------------------------------------------------------
+第三方声明（Third-Party Notices）
+------------------------------------------------------------
+本项目包含对以下第三方组件的使用与参考，其各自的许可证不受本项目许可证影响。
+完整清单见本仓库 THIRD_PARTY_NOTICES.md：
+
+- AndroidX 组件（Apache-2.0，Copyright The Android Open Source Project）
+- Kotlin 标准库与协程（Apache-2.0，Copyright JetBrains s.r.o.）
+- OkHttp / Okio（Apache-2.0，Copyright Square, Inc.）
+- Gson（Apache-2.0，Copyright Google LLC）
+- JUnit（EPL-2.0，仅测试使用）
+- KidSafe（MIT，Copyright (c) 2019 Mahmoud Mansour）——设计参考
+- TestDPC（Apache-2.0，Copyright Google Inc.）——平台 API 用法参考
+- Headwind MDM（Apache-2.0，Copyright 2018 Vsevolod Mayorov）——设计参考
+- Curbox（GPL-3.0-or-later）——设计参考（无代码复制）
+- APKUpdater（GPL-3.0，Copyright 2024 rumboalla）——设计参考（无代码复制）
+- Child Screen Time / cst（仓库无许可证）——思路参考（无代码复制）

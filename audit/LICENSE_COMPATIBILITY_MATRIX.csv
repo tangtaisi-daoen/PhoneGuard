@@ -1,0 +1,15 @@
+组件,组件许可证,主许可证(AGPL-3.0-or-later)兼容性,义务,处理
+AndroidX 全套 (core/appcompat/material/lifecycle/work 等),Apache-2.0,兼容(可并入 AGPL 项目),保留版权与 NOTICE 声明,THIRD_PARTY_NOTICES.md 记录;NOTICE 已列
+Kotlin stdlib / coroutines,Apache-2.0,兼容,保留版权声明,同上
+OkHttp / Okio,Apache-2.0,兼容,保留版权与许可声明,同上
+Gson,Apache-2.0,兼容,保留版权声明,同上
+JUnit (仅 testImplementation),EPL-2.0,测试期使用无分发义务(不打包进 APK),无需在 APK 内声明,测试依赖不进入发布产物
+KidSafe, MIT,兼容,保留 MIT 版权行,THIRD_PARTY_NOTICES + NOTICE 记录
+TestDPC,Apache-2.0,兼容(仅参考 API 用法),保留声明,同上
+Headwind MDM,Apache-2.0,兼容(仅思路参考),保留声明,同上
+Curbox,GPL-3.0-or-later,兼容(无代码进入,仅思路参考;若未来引入 GPL 代码需整包 AGPL/GPL 兼容),无义务(无派生代码),相似度审计已排除(见 CODE_SIMILARITY_REPORT)
+APKUpdater,GPL-3.0,兼容(同上),无义务(无派生代码),同上
+cst,无许可证,不兼容(禁止复制),无义务(仅思路参考,无复制),同上;发布说明注明参考关系
+Chastify,无许可证,不适用,无义务(已排除),定性:提交信息误引
+Android SDK API,平台 API,不适用,无义务,—
+自有资产(图标/文案/分类表),自研,不适用,无义务,—

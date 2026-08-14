@@ -2,17 +2,22 @@ package com.familyguard.core.session
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 
 /**
- * 会话与本地状态存储（SharedPreferences 私有文件）。
+ * 会话与本地状态存储（EncryptedSharedPreferences，Android Keystore 主密钥）。
  *
- * 说明：云端 token 属于敏感凭据，正式发布前应升级为 EncryptedSharedPreferences（androidx.security）。
  * 管理端存：accessToken / refreshToken / userId / username
  * 被控端存：deviceId（匿名身份，须保持稳定）/ inviteCode / boundAdminUid
+ *
+ * 迁移：旧版本使用明文 SharedPreferences（familyguard_session），
+ * 首次升级时自动把已有值搬入加密存储并删除明文文件。
  */
 object SessionStore {
 
-    private const val PREFS_NAME = "familyguard_session"
+    private const val PREFS_NAME = "familyguard_session_secure"
+    private const val LEGACY_PREFS_NAME = "familyguard_session"
     private const val KEY_ACCESS_TOKEN = "access_token"
     private const val KEY_REFRESH_TOKEN = "refresh_token"
     private const val KEY_USER_ID = "user_id"
@@ -24,10 +29,51 @@ object SessionStore {
     private lateinit var prefs: SharedPreferences
 
     fun init(context: Context) {
-        if (!::prefs.isInitialized) {
-            prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (::prefs.isInitialized) return
+        val appContext = context.applicationContext
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        // 注意：security-crypto 1.0.0 的 create 签名顺序为 (fileName, masterKeyAlias, context, keyScheme, valueScheme)
+        prefs = EncryptedSharedPreferences.create(
+            PREFS_NAME,
+            masterKeyAlias,
+            appContext,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
+        migrateLegacy(appContext)
+    }
+
+    /**
+     * 一次性迁移旧明文存储：键值搬入加密存储后删除明文文件。
+     * 纯逻辑判定提取为 internal 便于单元测试。
+     */
+    private fun migrateLegacy(appContext: Context) {
+        val legacy = appContext.getSharedPreferences(LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
+        val migrated = legacy.all
+        if (migrated.isNotEmpty() && shouldMigrate(migrated)) {
+            prefs.edit().apply {
+                migrated.forEach { (k, v) ->
+                    when (v) {
+                        is String -> putString(k, v)
+                        is Long -> putLong(k, v)
+                        is Int -> putInt(k, v)
+                        is Boolean -> putBoolean(k, v)
+                        is Float -> putFloat(k, v)
+                    }
+                }
+            }.apply()
+            // 明文文件删除（allowBackup=false 下不进入备份）
+            appContext.deleteSharedPreferences(LEGACY_PREFS_NAME)
         }
     }
+
+    /** 迁移判定：明文文件中存在任一业务键即迁移。 */
+    internal fun shouldMigrate(legacyValues: Map<String, *>): Boolean =
+        legacyValues.containsKey(KEY_ACCESS_TOKEN) ||
+            legacyValues.containsKey(KEY_REFRESH_TOKEN) ||
+            legacyValues.containsKey(KEY_USER_ID) ||
+            legacyValues.containsKey(KEY_DEVICE_ID) ||
+            legacyValues.containsKey(KEY_INVITE_CODE)
 
     // ---- 管理端会话 ----
 

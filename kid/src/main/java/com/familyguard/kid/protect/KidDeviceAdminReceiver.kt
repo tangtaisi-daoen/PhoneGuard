@@ -38,7 +38,7 @@ class KidDeviceAdminReceiver : DeviceAdminReceiver() {
         // 设备管理器被停用 → 上报异常（防卸载被解除）
         CoroutineScope(Dispatchers.IO).launch {
             val auth = CloudBaseAuth.signInAnonymously(KidApp.client, SessionStore.deviceId) ?: return@launch
-            CloudBaseEvents.report(KidApp.client, auth.userId, "ADMIN_DISABLED", "设备管理器已被停用，卸载保护失效")
+            CloudBaseEvents.report(KidApp.client, auth.userId, "ADMIN_DISABLED", "设备管理器已被停用，卸载保护失效", adminUid = SessionStore.boundAdminUid)
         }
     }
 
