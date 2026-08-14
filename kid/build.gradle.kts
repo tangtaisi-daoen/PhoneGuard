@@ -12,6 +12,12 @@ val keystoreProps = Properties().apply {
 }
 val hasSigning = keystoreProps.getProperty("storeFile") != null
 
+// CloudBase 环境 ID：自托管模式——构建时注入（-PcloudbaseEnvId=xxx 或环境变量 CLOUDBASE_ENV_ID），
+// 未注入时使用占位符（开箱不可用，README 指引自建环境）。
+val cloudbaseEnvId: String = (project.findProperty("cloudbaseEnvId") as? String)
+    ?: System.getenv("CLOUDBASE_ENV_ID")
+    ?: "YOUR_ENV_ID"
+
 android {
     namespace = "com.familyguard.kid"
     compileSdk = 34
@@ -59,8 +65,13 @@ android {
         buildConfig = true
     }
     defaultConfig {
-        // CloudBase 环境 ID（非敏感信息）
-        buildConfigField("String", "CLOUDBASE_ENV_ID", "\"YOUR_ENV_ID\"")
+        // CloudBase 环境 ID（自托管：构建时 -PcloudbaseEnvId 注入；占位符需用户自建环境替换）
+        buildConfigField("String", "CLOUDBASE_ENV_ID", "\"$cloudbaseEnvId\"")
+        // 远程更新清单地址（自托管：构建时 -PupdateManifestUrl 注入；默认占位符）
+        val updateManifestUrl: String = (project.findProperty("updateManifestUrl") as? String)
+            ?: System.getenv("UPDATE_MANIFEST_URL")
+            ?: "YOUR_UPDATE_MANIFEST_URL"
+        buildConfigField("String", "UPDATE_MANIFEST_URL", "\"$updateManifestUrl\"")
     }
 }
 
