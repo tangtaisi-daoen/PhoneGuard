@@ -1,22 +1,22 @@
 # PhoneGuard 回归测试矩阵（阶段六B）
 
-> 状态：框架（2026-08-14）；自动测试结果回填 REGRESSION_REPORT.md；真机项由用户执行后勾选。
+> 状态：A 部分自动测试结果已于 2026-08-14 实测回填（`gradlew test` 全绿，154 tasks BUILD SUCCESSFUL）；C 部分构建/Lint 实测回填；B 部分真机项由用户执行后勾选。
 > 场景依据：DEEPSEEK_OPEN_SOURCE_RELEASE_PLAN.md 第 11 节。
 
-## A. 自动化覆盖（:core / :admin / :kid JVM 测试）
+## A. 自动化覆盖（:core / :admin / :kid JVM 测试，2026-08-14 实测通过）
 
 | # | 场景 | 测试文件 | 结果 |
 |---|---|---|---|
-| A1 | 规则引擎（app/类别/总额/时段叠加取最短） | RulesEngineTest、TemporaryAllowanceRulesEngineTest | ⬜ |
-| A2 | 规则日历（周中/周末/假期/跨午夜） | RuleCalendarTest | ⬜ |
-| A3 | 规则信封编解码/同步健康 | RuleEnvelopeCodecTest、RuleSyncHealthTest | ⬜ |
-| A4 | 使用统计（分钟取整/类别/前台/在线判定） | UsageReportTest、ForegroundUsageCalculatorTest、InstalledAppFilterTest | ⬜ |
-| A5 | 异常生命周期（OPEN/ACK/RESOLVED/对账） | IncidentLifecycleTest、IncidentReconcilerTest、AnomalyAggregatorTest、ConditionReconcileGateTest | ⬜ |
-| A6 | 防护策略（无障碍健康/页面分类/返回导航） | AccessibilityHealthPolicyTest、ProtectionPageClassifierTest、ProtectionReturnNavigatorTest、ProtectionGuardPolicyTest | ⬜ |
-| A7 | 更新（manifest 验证器/投递策略/周期检查） | UpdateManifestVerifierTest、UpdateDeliveryPolicyTest、PeriodicUpdateCheckTest | ⬜ |
-| A8 | 后端编解码（绑定/事件/心跳快照） | CloudBaseBindingsTest、CloudBaseEventsCodecTest、CloudBaseUsageSnapshotTest | ⬜ |
-| A9 | 绑定安全加固（新增） | CloudBaseBindingsTest（isBindingEligible/selectLatestInviteCode） | ⬜ |
-| A10 | 托管策略/设备管理模式 | ManagedProtectionPolicyTest、ProtectionHealthTest、ProvisioningModePolicyTest | ⬜ |
+| A1 | 规则引擎（app/类别/总额/时段叠加取最短） | RulesEngineTest、TemporaryAllowanceRulesEngineTest | ✅ |
+| A2 | 规则日历（周中/周末/假期/跨午夜） | RuleCalendarTest | ✅ |
+| A3 | 规则信封编解码/同步健康 | RuleEnvelopeCodecTest、RuleSyncHealthTest | ✅ |
+| A4 | 使用统计（分钟取整/类别/前台/在线判定） | UsageReportTest、ForegroundUsageCalculatorTest、InstalledAppFilterTest | ✅ |
+| A5 | 异常生命周期（OPEN/ACK/RESOLVED/对账） | IncidentLifecycleTest、IncidentReconcilerTest、AnomalyAggregatorTest、ConditionReconcileGateTest | ✅ |
+| A6 | 防护策略（无障碍健康/页面分类/返回导航） | AccessibilityHealthPolicyTest、ProtectionPageClassifierTest、ProtectionReturnNavigatorTest、ProtectionGuardPolicyTest | ✅ |
+| A7 | 更新（manifest 验证器/投递策略/周期检查） | UpdateManifestVerifierTest、UpdateDeliveryPolicyTest、PeriodicUpdateCheckTest | ✅ |
+| A8 | 后端编解码（绑定/事件/心跳快照） | CloudBaseBindingsTest、CloudBaseEventsCodecTest、CloudBaseUsageSnapshotTest | ✅ |
+| A9 | 绑定安全加固（新增） | CloudBaseBindingsTest（isBindingEligible/selectLatestInviteCode） | ✅ |
+| A10 | 托管策略/设备管理模式 | ManagedProtectionPolicyTest、ProtectionHealthTest、ProvisioningModePolicyTest | ✅ |
 
 ## B. 真机回归（OPPO A92s，用户执行）
 
@@ -51,10 +51,10 @@
 - [ ] 升级安装（旧版明文会话数据迁移到加密存储后仍保持登录/绑定）
 - [ ] 安全规则收紧后：admin 可读自己的规则/报告；kid 可上报；**跨用户读取被拒（403）**
 
-## C. 构建与静态检查
+## C. 构建与静态检查（2026-08-14 实测）
 
-- [ ] :core:test 全绿
-- [ ] :admin:testDebugUnitTest + assembleDebug 全绿
-- [ ] :kid:testDebugUnitTest + assembleDebug 全绿
-- [ ] :kid:lint 无新增错误（阶段六B 收尾）
-- [ ] release 双端构建 + SHA-256（阶段七）
+- [x] :core:test 全绿（含 :admin/:kid test，154 tasks BUILD SUCCESSFUL）
+- [x] :admin:assembleDebug 全绿
+- [x] :kid:assembleDebug 全绿
+- [x] :admin:lint / :kid:lint 无新增错误（141 tasks BUILD SUCCESSFUL）
+- [ ] release 双端构建 + SHA-256（发布构建执行；需签名配置 keystore.properties，gitignored 不入库）

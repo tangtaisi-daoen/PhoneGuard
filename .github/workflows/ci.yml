@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Unit tests (core / admin / kid)
+        run: ./gradlew test --console=plain
+
+      - name: Lint
+        run: ./gradlew :admin:lint :kid:lint --console=plain
+
+      - name: Debug build
+        run: ./gradlew :admin:assembleDebug :kid:assembleDebug --console=plain
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apks
+          path: |
+            admin/build/outputs/apk/debug/*.apk
+            kid/build/outputs/apk/debug/*.apk
+          retention-days: 7

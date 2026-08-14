@@ -1,5 +1,6 @@
 # PhoneGuard 安全审计报告（阶段四）
 
+> ⚠️ **历史基线报告**：记录 2026-08-14 审计时点的状态；后续变更以当前代码与文档为准。
 > 审计时间：2026-08-14
 > 审计范围：认证/绑定/邀请码、CloudBase 数据库 API、双端鉴权、远程更新链（签名/版本/回滚）、Device Owner/无障碍/悬浮窗/用量权限边界、启动恢复/离线、防卸载/防篡改、release 清洁度
 > 结论先行：**无 Critical 风险**；2 项 High（均为"需控制台/流程配合"性质，非代码本身缺陷）、6 项 Medium、3 项 Low。
@@ -10,7 +11,7 @@
 |---|---|---|---|---|
 | **H1** | **Critical→（发布形态变更后降级）** | **后端数据权限全开放（已实测）：bindings/rules/events/usage/apps 五集合安全规则均为 `{"read":true,"write":true}`。2026-08-14 用户决策改为纯自托管发布（APK 不内置真实环境 ID），"公开即暴露"路径切断 → 降级为自有环境加固建议（代码侧修复已完成，线上规则应用待用户控制台操作，指引见 BACKEND_RULES_AUDIT.md §3a/3b）** | CloudBase 控制台安全规则 | 代码侧已完成并提交；线上规则按 §3b 指引应用 |
 | H2 | High | 绑定无调用者身份约束：6 位邀请码（32 字符集）即唯一凭证；泄露/被猜中可抢先绑定；kidDeviceId 自报可冒名上报；刷新邀请码不使旧码失效（旧 PENDING 码长期有效） | CloudBaseBindings.generateInviteCode / bindWithCode | 建议：绑定校验管理员身份字段、刷新码时旧码置失效、邀请码有效期；评估服务端限流 |
-| M1 | Medium | 会话 token 明文存 SharedPreferences（MODE_PRIVATE） | SessionStore.kt（注释已自标） | allowBackup=false 已缓解备份提取；root 设备仍可读；**发布前升级 EncryptedSharedPreferences 或记录为已知限制** |
+| M1 | Medium | 会话 token 明文存 SharedPreferences（MODE_PRIVATE） | SessionStore.kt（注释已自标） | allowBackup=false 已缓解备份提取；root 设备仍可读；**发布前升级 EncryptedSharedPreferences 或记录为已知限制**；✅ **2026-08-14 已完成**：SessionStore 迁移 EncryptedSharedPreferences（AES256-GCM，密钥由 Keystore 持有），含旧明文数据自动迁移 |
 | M2 | Medium | 匿名身份 x-device-id 自报，可伪造（知晓 deviceId 可冒名上报使用数据/事件） | CloudBaseAuth.signInAnonymously | 风险依赖 CloudBase 对 x-device-id 的处理；缓解：deviceId 16 位随机不易猜 |
 | M3 | Medium | 无 TLS 证书 pinning（信任系统 CA） | CloudBaseClient (OkHttp) | 默认 CA 链可接受；加固可选（配合控制台域名固定） |
 | M4 | Medium | release 包残留 Log.d 调试日志（内容仅包名/判定文本，无敏感数据） | GuardAccessibilityService 等 | 阶段七清理或 ProGuard 移除 |

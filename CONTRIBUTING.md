@@ -15,7 +15,7 @@
 2. 分支命名 `fix/xxx` 或 `feat/xxx`；
 3. 提交信息遵循 Conventional Commits（`feat:` / `fix:` / `refactor:` / `docs:` / `chore:`）；
 4. 每个提交保持原子性（一个逻辑一个提交），相关测试通过后再提交；
-5. 变更合入前通过 `./gradlew test` 与 lint。
+5. 变更合入前通过 `./gradlew test` 与 lint（CI 会在 push/PR 时自动执行相同检查，见 `.github/workflows/ci.yml`）。
 
 ## 注意事项
 

@@ -1,5 +1,6 @@
 # PhoneGuard 代码相似度审计报告（阶段二：GPL 传染风险专项）
 
+> ⚠️ **历史基线报告**：记录 2026-08-14 审计时点的状态；后续变更以当前代码与文档为准。
 > 审计时间：2026-08-14
 > 方法：上游仓库克隆至本地（Curbox kt-rewrite 分支 / APKUpdater 调研 commit `69b6fcdf` 精确 checkout），与本地实现做 ①标识符+字符串字面量 Jaccard 相似度 ②方法签名/类结构对比 ③关键文件人工逐行对照。
 > 判定阈值说明：同领域 Android 代码因共享平台 API（PackageInstaller/AccessibilityService/WorkManager 等）天然存在 0.05–0.15 的词汇重叠；"直接复制/修改使用"通常 ≥0.4。全部 18 对结果 ≤0.145，全部判为**无代码级复制**。
