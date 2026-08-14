@@ -16,3 +16,7 @@ keystore.properties
 release-keys/update-manifest-private.pem
 docs/backup-before-fully-managed.md
 cloudbaserc.json
+
+# 脱敏工作文件（含真实环境ID映射，禁止提交）
+mailmap.txt
+replacements.txt
