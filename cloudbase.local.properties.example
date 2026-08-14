@@ -1,0 +1,10 @@
+# CloudBase 本地测试配置模板：复制为 cloudbase.local.properties 并填入真实值（绝不提交）
+# 供 CloudBaseVerifyTest（CLOUDBASE_VERIFY=1 手动执行）与本地调试使用
+envId=YOUR_ENV_ID
+email=YOUR_EMAIL@example.com
+username=YOUR_USERNAME
+password=YOUR_PASSWORD
+# 移动应用安全来源凭证（控制台：安全配置 → 移动应用安全来源）
+appSign=
+appAccessKeyId=
+appAccessKey=
