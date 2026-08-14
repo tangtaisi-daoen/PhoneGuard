@@ -1,7 +1,7 @@
 资产,类型,位置,是否进入Git历史,暴露范围,敏感等级,状态,处理建议
 Git提交作者信息,个人身份,全部29个提交 (git log --format="%an <%ae>"),是,公开仓库后将向所有人暴露,高,待决策,历史改写为匿名邮箱(需用户批准)或接受公开
 AGENTS.md 第74行,本地绝对路径,C:\Users\<USERNAME>\AppData\Local\Temp\opencode\...,是,公开仓库将暴露Windows用户名与路径,高,待处理,公开版移除该行/整文件;历史清理需用户批准
-docs/backup-before-fully-managed.md,设备标识+绝对路径,OPPO PDKM00 序列号 BALZYXPBVKVWE6HQ; C:\Users\<USERNAME>\PhoneGuard-Backups\,否(未跟踪),仅本地,高,待处理,不提交;加入.gitignore或移出仓库;如发布需脱敏改写
+docs/backup-before-fully-managed.md,设备标识+绝对路径,OPPO PDKM00 序列号 <SERIAL>; C:\Users\<USERNAME>\PhoneGuard-Backups\,否(未跟踪),仅本地,高,待处理,不提交;加入.gitignore或移出仓库;如发布需脱敏改写
 keystore.properties,签名密码,仓库根目录,SHA256=E266CE4C...,否(gitignored),仅本地,高,安全,不提交;提供keystore.properties.example模板(占位符)
 phoneguard-release.keystore,APK签名私钥库,SHA256=06E7F30B...,否(gitignored),仅本地,高,安全,不提交;签名证书指纹SHA256=41091d46...为公开验证值,可保留
 release-keys/update-manifest-private.pem,更新清单签名私钥,SHA256=F6825208...,否(gitignored),仅本地,高,安全,不提交;对应公钥(MFkw...)为客户端内嵌公开值,可保留

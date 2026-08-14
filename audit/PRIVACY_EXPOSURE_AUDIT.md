@@ -25,7 +25,7 @@
 - 本地 `git config user.name/user.email` 与此一致，后续提交会继续携带。
 - **暴露范围**：仓库公开后任何访问者可通过 GitHub 提交页看到。GitHub 默认会隐藏已关联账号的邮箱，但仓库公开时作者字符串本身仍可见。
 - **处理选项（需用户决策）**：
-  1. 改写历史作者为匿名地址（如 `<1290125393+username@users.noreply.github.com>` 或 `<phoneguard-dev@users.noreply.github.com>`）——需重写全部提交哈希，**必须用户批准**（计划第 12 节要求）；
+  1. 改写历史作者为匿名地址（如 `<USERNAME+local@users.noreply.github.com>` 或 `<phoneguard-dev@users.noreply.github.com>`）——需重写全部提交哈希，**必须用户批准**（计划第 12 节要求）；
   2. 接受公开（不推荐，该邮箱即手机号/QQ 号）。
 
 ### 3.2 AGENTS.md 含 Windows 绝对路径（已进入 Git 历史）
