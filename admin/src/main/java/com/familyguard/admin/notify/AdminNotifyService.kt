@@ -91,6 +91,7 @@ class AdminNotifyService : Service() {
                 managedTypes = setOf("OFFLINE"),
                 refreshIntervalMs = OFFLINE_NOTIFY_INTERVAL_MS,
                 adminUid = uid,
+                queryAdminUid = uid,
             )
         ) {
             lastOfflineConditions = offlineConditions
@@ -127,6 +128,7 @@ class AdminNotifyService : Service() {
                     managedTypes = setOf("RULE_NOT_APPLIED"),
                     refreshIntervalMs = OFFLINE_NOTIFY_INTERVAL_MS,
                     adminUid = uid,
+                    queryAdminUid = uid,
                 )
                 lastRuleCheckAt = now
             }

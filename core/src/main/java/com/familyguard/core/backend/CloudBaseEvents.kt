@@ -176,11 +176,12 @@ object CloudBaseEvents {
         managedTypes: Set<String>,
         refreshIntervalMs: Long = 5 * 60_000L,
         adminUid: String? = null,
+        queryAdminUid: String? = null,
     ): Boolean {
         val docs = CloudBaseDb.queryDocuments(
             client,
             COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId),
+            where = reconcileQueryWhere(kidDeviceId, queryAdminUid),
             limit = 100,
         ) ?: return false
         val plan = IncidentReconciler.plan(
@@ -250,6 +251,22 @@ object CloudBaseEvents {
         if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         return where
     }
+}
+
+/**
+ * Builds the reconciliation read scope separately from the write owner.
+ *
+ * The kid client may pass the bound admin uid for writes while it must keep
+ * reading by its own kid uid so legacy events without adminUid remain visible.
+ * The admin client supplies queryAdminUid to satisfy the admin ownership rule.
+ */
+internal fun reconcileQueryWhere(
+    kidDeviceId: String,
+    queryAdminUid: String?,
+): Map<String, Any?> {
+    val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
+    if (!queryAdminUid.isNullOrBlank()) where["adminUid"] = queryAdminUid
+    return where
 }
 
 internal fun incidentDocument(
