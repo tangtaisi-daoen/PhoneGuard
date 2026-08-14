@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="12dp"
     app:cardElevation="1dp">
 
@@ -41,8 +41,12 @@
                     android:id="@+id/etPkg"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
                     android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_hint"
                     android:textSize="12sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,6 +64,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_hint"
                     android:textSize="12sp" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
@@ -76,8 +82,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
                 android:text="@string/rules_pkg_tap"
-                android:textColor="#999999"
+                android:textColor="@color/text_hint"
                 android:textSize="11sp" />
 
             <Spinner

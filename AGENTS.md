@@ -71,4 +71,4 @@
 ## 维护
 
 - 本项目使用全局 skill 目录：`~/.config/opencode/skills/`（agent-skills 24 个 + tdd + grill-me）。
-- 更新 skill：`git -C C:\Users\<USERNAME>\AppData\Local\Temp\opencode\agent-skills pull && git -C C:\Users\<USERNAME>\AppData\Local\Temp\opencode\mattpocock-skills pull`，然后重新拷贝到全局目录。
+- 更新 skill：`git -C <agent-skills 本地仓库> pull && git -C <mattpocock-skills 本地仓库> pull`，然后重新拷贝到全局目录。

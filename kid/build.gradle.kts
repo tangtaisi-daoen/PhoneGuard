@@ -20,8 +20,8 @@ android {
         applicationId = "com.familyguard.kid"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 15
+        versionName = "0.1.14"
     }
 
     signingConfigs {
@@ -36,6 +36,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 调试包与正式包并存，避免开发签名占用正式远程更新的包名。
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

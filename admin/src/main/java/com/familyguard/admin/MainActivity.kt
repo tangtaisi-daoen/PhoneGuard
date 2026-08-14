@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.activity.result.contract.ActivityResultContracts
 import com.familyguard.admin.databinding.ActivityMainBinding
 import com.familyguard.admin.notify.AdminNotifyService
 import com.familyguard.core.backend.CloudBaseBindings
@@ -17,6 +18,13 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) startNotifyService(showToast = true) else {
+            Toast.makeText(this, R.string.admin_notification_required, Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,14 +57,40 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AnomalyActivity::class.java))
         }
         binding.btnNotify.setOnClickListener {
-            startService(Intent(this, AdminNotifyService::class.java))
-            Toast.makeText(this, R.string.start_notify, Toast.LENGTH_SHORT).show()
+            ensureNotifyService()
         }
         binding.btnRefreshCode.setOnClickListener { confirmRefreshCode() }
         binding.btnCopyCode.setOnClickListener { copyInviteCode() }
         binding.tvInviteCode.setOnClickListener { copyInviteCode() }
 
         loadInviteCode()
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            startNotifyService(showToast = false)
+        }
+    }
+
+    private fun ensureNotifyService() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startNotifyService(showToast = true)
+        }
+    }
+
+    private fun startNotifyService(showToast: Boolean) {
+        val intent = Intent(this, AdminNotifyService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+        if (showToast) Toast.makeText(this, R.string.start_notify, Toast.LENGTH_SHORT).show()
     }
 
     /** 加载当前邀请码；没有则自动生成。 */

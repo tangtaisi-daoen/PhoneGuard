@@ -21,6 +21,7 @@ class CloudBaseClient(
     val envId: String,
     private val onTokenRefreshed: ((access: String, refresh: String?) -> Unit)? = null,
     private val http: OkHttpClient = OkHttpClient.Builder()
+        .callTimeout(25, TimeUnit.SECONDS)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build(),

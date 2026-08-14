@@ -1,5 +1,7 @@
 # Implementation Plan: 双端手机管控 App
 
+> 当前执行批次：`tasks/2026-08-14-protection-and-remaining-closures.md`。该批次处理守护返回栈回归、远程更新、异常生命周期、规则补齐与韧性闭环。
+
 ## Overview
 
 为哥哥（你）和弟弟（小学五年级）构建双端 Android 原生 Kotlin 应用：

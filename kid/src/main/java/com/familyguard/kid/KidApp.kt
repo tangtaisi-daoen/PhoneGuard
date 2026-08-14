@@ -9,6 +9,7 @@ import com.familyguard.core.session.RuleCacheStore
 import com.familyguard.core.session.SessionStore
 import com.familyguard.kid.stats.HeartbeatState
 import com.familyguard.kid.stats.GuardWorker
+import com.familyguard.kid.guard.AccessibilityHealthStore
 import java.util.concurrent.TimeUnit
 
 class KidApp : Application() {
@@ -17,6 +18,7 @@ class KidApp : Application() {
         SessionStore.init(this)
         RuleCacheStore.init(this)
         HeartbeatState.init(this)
+        AccessibilityHealthStore.markProcessStarted(this)
         client = CloudBaseClient(BuildConfig.CLOUDBASE_ENV_ID).apply {
             // 被控端使用匿名身份，token 可随时重新获取
         }

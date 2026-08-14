@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import com.familyguard.kid.MainActivity
 import com.familyguard.kid.R
 import com.familyguard.kid.databinding.ActivityGuideBinding
 
@@ -15,6 +17,11 @@ import com.familyguard.kid.databinding.ActivityGuideBinding
 class GuideActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGuideBinding
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) refresh() else openNotificationSettings()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,12 +29,18 @@ class GuideActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnUsage.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+            if (GuardStatus.hasUsageAccess(this)) returnToBoundHome()
+            else startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
         binding.btnAccessibility.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            if (GuardStatus.isAccessibilityEnabled(this)) returnToBoundHome()
+            else startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         binding.btnBattery.setOnClickListener {
+            if (GuardStatus.ignoresBatteryOptimization(this)) {
+                returnToBoundHome()
+                return@setOnClickListener
+            }
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                 .setData(Uri.parse("package:$packageName"))
             runCatching { startActivity(intent) }.onFailure {
@@ -35,16 +48,41 @@ class GuideActivity : AppCompatActivity() {
             }
         }
         binding.btnAutostart.setOnClickListener {
-            openOppoAutostartSettings()
+            if (GuardStatus.isAutostartConfirmed(this)) returnToBoundHome()
+            else openOppoAutostartSettings()
         }
-        binding.btnAdmin.setOnClickListener { openDeviceAdmin() }
+        binding.btnConfirmAutostart.setOnClickListener {
+            GuardStatus.confirmAutostart(this)
+            Toast.makeText(this, R.string.guide_autostart_confirmed_toast, Toast.LENGTH_SHORT).show()
+            refresh()
+        }
+        binding.btnAdmin.setOnClickListener {
+            if (GuardStatus.isAdminActive(this)) returnToBoundHome()
+            else openDeviceAdmin()
+        }
         binding.btnOverlay.setOnClickListener {
+            if (GuardStatus.canDrawOverlays(this)) {
+                returnToBoundHome()
+                return@setOnClickListener
+            }
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName"),
             )
             runCatching { startActivity(intent) }
                 .onFailure { Toast.makeText(this, R.string.guide_open_settings_failed, Toast.LENGTH_SHORT).show() }
+        }
+        binding.btnNotifications.setOnClickListener {
+            if (GuardStatus.notificationsEnabled(this)) {
+                returnToBoundHome()
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                openNotificationSettings()
+            }
         }
         binding.btnRefreshGuide.setOnClickListener { refresh() }
         refresh()
@@ -61,12 +99,35 @@ class GuideActivity : AppCompatActivity() {
         val battery = GuardStatus.ignoresBatteryOptimization(this)
         val admin = GuardStatus.isAdminActive(this)
         val overlay = GuardStatus.canDrawOverlays(this)
+        val autostart = GuardStatus.isAutostartConfirmed(this)
+        val notifications = GuardStatus.notificationsEnabled(this)
         binding.tvUsage.text = getString(if (usage) R.string.guide_ok else R.string.guide_missing)
         binding.tvAccessibility.text = getString(if (a11y) R.string.guide_ok else R.string.guide_missing)
         binding.tvBattery.text = getString(if (battery) R.string.guide_ok else R.string.guide_missing)
-        binding.tvAutostart.text = getString(R.string.guide_autostart_manual)
+        binding.tvAutostart.text = getString(
+            if (autostart) R.string.guide_autostart_confirmed else R.string.guide_autostart_manual,
+        )
         binding.tvAdmin.text = getString(if (admin) R.string.guide_ok else R.string.guide_missing)
         binding.tvOverlay.text = getString(if (overlay) R.string.guide_ok else R.string.guide_missing)
+        binding.tvNotifications.text = getString(if (notifications) R.string.guide_ok else R.string.guide_missing)
+        binding.btnUsage.setText(if (usage) R.string.guide_protected else R.string.guide_go)
+        binding.btnAccessibility.setText(if (a11y) R.string.guide_protected else R.string.guide_go)
+        binding.btnBattery.setText(if (battery) R.string.guide_protected else R.string.guide_go)
+        binding.btnAutostart.setText(if (autostart) R.string.guide_protected else R.string.guide_go)
+        binding.btnAdmin.setText(if (admin) R.string.guide_protected else R.string.guide_go)
+        binding.btnOverlay.setText(if (overlay) R.string.guide_protected else R.string.guide_go)
+        binding.btnNotifications.setText(if (notifications) R.string.guide_protected else R.string.guide_go)
+        binding.btnConfirmAutostart.isEnabled = !autostart
+    }
+
+    private fun returnToBoundHome() {
+        Toast.makeText(this, R.string.guide_permission_protected, Toast.LENGTH_SHORT).show()
+        startActivity(
+            Intent(this, MainActivity::class.java).addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            ),
+        )
+        finish()
     }
 
     /** 激活设备管理器（防卸载）。 */
@@ -95,6 +156,13 @@ class GuideActivity : AppCompatActivity() {
             }
         }
         runCatching { startActivity(Intent(Settings.ACTION_SETTINGS)) }
+            .onFailure { Toast.makeText(this, R.string.guide_open_settings_failed, Toast.LENGTH_SHORT).show() }
+    }
+
+    private fun openNotificationSettings() {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        runCatching { startActivity(intent) }
             .onFailure { Toast.makeText(this, R.string.guide_open_settings_failed, Toast.LENGTH_SHORT).show() }
     }
 }

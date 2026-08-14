@@ -83,11 +83,22 @@ object CloudBaseBindings {
         val matched = CloudBaseDb.queryDocuments(
             client, COLLECTION,
             where = mapOf("adminUid" to adminUid, "status" to "BOUND"),
-            limit = 1,
+            // 管理端可能多次重新绑定，不能取历史记录中的第一条。
+            limit = 100,
         ) ?: return null
-        val doc = matched.firstOrNull() ?: return null
-        return doc["kidDeviceId"]?.toString()?.takeIf { it.isNotBlank() }
+        return selectLatestBoundDeviceId(matched)
     }
+
+    /** 从同一管理员的绑定历史中选择最近一次成功绑定的设备。 */
+    internal fun selectLatestBoundDeviceId(rows: List<Map<String, Any?>>): String? =
+        rows.asSequence()
+            .mapNotNull { row ->
+                val deviceId = row["kidDeviceId"]?.toString()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val boundAt = row["boundAt"]?.toString()?.toLongOrNull() ?: 0L
+                boundAt to deviceId
+            }
+            .maxByOrNull { it.first }
+            ?.second
 }
 
 /** 绑定结果。 */

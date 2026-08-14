@@ -1,0 +1,20 @@
+{
+    "schemaVersion":  1,
+    "releaseId":  "kid-0.1.14-15",
+    "channel":  "stable",
+    "packageName":  "com.familyguard.kid",
+    "versionCode":  15,
+    "versionName":  "0.1.14",
+    "minSupportedVersionCode":  3,
+    "url":  "https://YOUR_ENV_ID-0000000000.tcloudbaseapp.com/phoneguard/kid/releases/15/kid-release.apk",
+    "sizeBytes":  7147581,
+    "apkSha256":  "6d4c52c29071741b3487ac4eaafef8e1e0078e3b1347a09a30bdaa3f0f61b5db",
+    "signingCertSha256":  "41091d4667b59d051895abdf1e01c32e83cb1aea0e8ca2b253c9020d6e29e937",
+    "mandatory":  false,
+    "deadlineAt":  0,
+    "rolloutPercent":  100,
+    "issuedAt":  1786683295496,
+    "expiresAt":  1794459295500,
+    "signatureAlgorithm":  "SHA256withECDSA",
+    "manifestSignature":  "MEUCIEiv/GezsupY5UkVYWAgwoU+9bMhrf8R/EbNrSCuAgzQAiEAg/0zNReHrgA5O3VgS5kN13BkGQ7vpVx/IZawlBYvcLg="
+}

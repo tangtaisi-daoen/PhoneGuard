@@ -46,7 +46,7 @@
     <string name="rules_category_title">分类限时（分钟，0 = 不限制）</string>
     <string name="rules_app_title">按应用限时</string>
     <string name="rules_minutes_hint">分钟</string>
-    <string name="rules_pkg_hint">应用包名（如 com.xingin.xhs）</string>
+    <string name="rules_pkg_hint">应用名称</string>
     <string name="rules_add_app">添加应用限制</string>
     <string name="rules_save">保存并下发</string>
     <string name="rules_load">重新加载</string>
@@ -56,13 +56,20 @@
     <string name="rules_pkg_invalid">包名格式不对：请填应用包名（如 com.xingin.xhs），不是应用名称</string>
     <string name="rules_pick_app">从被控端应用中选择</string>
     <string name="rules_pick_empty">暂无被控端应用列表（等下一次心跳，最多 2 分钟）</string>
+    <string name="rules_pick_loading">正在读取被控端应用…</string>
+    <string name="rules_pick_not_logged_in">登录状态已失效，请重新登录</string>
+    <string name="rules_pick_not_bound">尚未绑定被控端，请先用邀请码完成绑定</string>
+    <string name="rules_pick_failed">读取应用列表失败，请检查网络后重试</string>
+    <string name="rules_invalid_row">请为已选择的应用填写有效分钟数</string>
     <string name="rules_pkg_tap">点此选择应用</string>
+    <string name="rules_pick_again">点击更换应用</string>
     <string-array name="rules_categories">
-        <item>自动</item>
+        <item>未分类</item>
         <item>游戏</item>
         <item>短视频</item>
+        <item>长视频</item>
         <item>社交</item>
-        <item>不分类</item>
+        <item>工具</item>
     </string-array>
     <string name="cat_game">游戏</string>
     <string name="cat_short_video">短视频</string>
@@ -74,17 +81,41 @@
     <string name="monitor_loading">加载中…</string>
     <string name="monitor_not_bound">还没有绑定被控端，先去生成邀请码让弟弟绑定</string>
     <string name="monitor_no_data">被控端还没有上报数据（等下一次心跳，最多 2 分钟）</string>
+    <string name="monitor_failed">读取使用报告失败，请检查网络后重试</string>
     <string name="monitor_online">在线</string>
     <string name="monitor_offline">离线</string>
     <string name="monitor_no_app">无前台应用</string>
     <string name="monitor_status">被控端：%1$s\n当前使用：%2$s\n数据日期：%3$s</string>
     <string name="monitor_total">今日总时长：</string>
     <string name="monitor_by_category">按类别：</string>
+    <string name="monitor_summary">今日总时长 %1$d 分钟 · 使用 %2$d 个应用 · 使用最多：%3$s</string>
+    <string name="monitor_app_row">%1$d. %2$s：%3$d 分钟</string>
+    <string name="monitor_category_row">%1$s：%2$d 分钟（%3$d%%）</string>
+    <string name="monitor_trend_row">%1$s：%2$d 分钟</string>
+    <string name="monitor_no_app_data">今天还没有应用使用记录</string>
+    <string name="monitor_no_category_data">今天还没有分类数据</string>
+    <string name="monitor_no_trend_data">暂无近 7 日数据</string>
     <string name="unit_minutes"> 分钟</string>
     <string name="monitor_refresh">刷新</string>
     <string name="anomaly">异常通知</string>
     <string name="anomaly_refresh">刷新列表</string>
     <string name="anomaly_none">暂无异常事件</string>
+    <string name="anomaly_healthy">当前没有检测到异常</string>
+    <string name="anomaly_not_bound">尚未绑定被控端</string>
+    <string name="anomaly_failed">读取异常事件失败，请检查网络后重试</string>
+    <string name="anomaly_summary">当前 %1$d 个事故 · 已恢复 %2$d 个</string>
+    <string name="anomaly_acknowledge_all">确认已看到当前异常</string>
+    <string name="anomaly_acknowledged">当前异常已确认，恢复后会自动关闭</string>
+    <string name="anomaly_ack_failed">确认失败，请检查网络</string>
+    <string name="anomaly_status_open">待处理</string>
+    <string name="anomaly_status_acknowledged">已确认</string>
+    <string name="anomaly_status_resolved">已恢复</string>
+    <string name="anomaly_time_range">首次 %1$s · 最近 %2$s</string>
+    <string name="anomaly_resolved_at">恢复于 %1$s</string>
+    <string name="anomaly_suggestion">建议：%1$s</string>
+    <string name="anomaly_severity_high">高风险</string>
+    <string name="anomaly_severity_medium">需关注</string>
+    <string name="anomaly_severity_low">提示</string>
     <string name="anomaly_notif_title">手机守护异常（%1$d 条）</string>
     <string name="notif_channel_anomaly">异常通知</string>
     <string name="anomaly_type_admin">防卸载被解除</string>
@@ -94,6 +125,79 @@
     <string name="anomaly_type_offline">被控端离线</string>
     <string name="anomaly_type_uninstall">卸载尝试</string>
     <string name="start_notify">开启异常通知</string>
+    <string name="admin_notification_required">请允许管理端通知，否则无法收到被控端异常提醒</string>
+    <string name="notif_channel_monitoring">守护监控状态</string>
+    <string name="monitoring_notification_title">手机管控正在监控</string>
+    <string name="monitoring_notification_text">持续检查被控端离线、权限、规则与更新状态</string>
     <string name="offline_notif_title">被控端可能已离线</string>
     <string name="offline_notif_text">超过 5 分钟没有收到心跳，可能断网或手机守护被关闭</string>
+    <string name="anomaly_type_update_available">发现新版本</string>
+    <string name="anomaly_type_update_failed">更新检查失败</string>
+    <string name="rules_profile_weekday">周中</string>
+    <string name="rules_profile_weekend">周末</string>
+    <string name="rules_profile_holiday">假期</string>
+    <string name="rules_profile_weekday_hint">正在编辑周一至周五规则</string>
+    <string name="rules_profile_weekend_hint">正在编辑周六、周日规则</string>
+    <string name="rules_profile_holiday_hint">正在编辑指定假期使用的规则</string>
+    <string name="rules_dates_title">指定日期与调休</string>
+    <string name="rules_dates_empty">尚未指定假期或调休工作日</string>
+    <string name="rules_add_holiday">添加连续假期</string>
+    <string name="rules_add_workday">添加调休工作日</string>
+    <string name="rules_clear_dates">清空指定日期</string>
+    <string name="rules_date_holiday">假期</string>
+    <string name="rules_date_workday">调休工作日</string>
+    <string name="rules_holiday_start">选择假期开始日</string>
+    <string name="rules_holiday_end">选择假期结束日</string>
+    <string name="rules_holiday_invalid_range">结束日期不能早于开始日期</string>
+    <string name="rules_temporary_title">临时加时</string>
+    <string name="rules_temporary_empty">当前没有有效的临时加时</string>
+    <string name="rules_temporary_add">给应用临时加时</string>
+    <string name="rules_temporary_clear">全部清除</string>
+    <string name="rules_temporary_pick_minutes">选择额外可用时长（当天有效）</string>
+    <string name="rules_temporary_minutes">加 %1$d 分钟</string>
+    <string name="rules_temporary_row">%1$s：+%2$d 分钟，有效至 %3$s</string>
+    <string name="rules_temporary_reason">管理端临时加时</string>
+    <string name="monitor_rule_status">当前采用：%1$s规则 · %2$s\n已应用规则版本：%3$d</string>
+    <string name="monitor_rule_pending">规则状态：等待被控端同步新日历规则</string>
+    <string name="monitor_rule_outdated">规则待同步：云端版本 %1$d · 被控端版本 %2$d</string>
+    <string name="monitor_accessibility_status">无障碍守护：%1$s</string>
+    <string name="monitor_accessibility_disabled">权限未开启</string>
+    <string name="monitor_accessibility_connected">已连接</string>
+    <string name="monitor_accessibility_disconnected">权限已开但服务未连接</string>
+    <string name="monitor_protection_status">防删模式：%1$s</string>
+    <string name="monitor_protection_managed">Fully Managed，系统级防卸载已生效</string>
+    <string name="monitor_protection_compatibility">兼容模式，无系统级防卸载</string>
+    <string name="monitor_permissions_status">关键权限：使用情况%1$s · 悬浮窗%2$s · 电池保护%3$s · 自启动%4$s · 通知%5$s</string>
+    <string name="monitor_permissions_pending">关键权限：等待新版被控端上报</string>
+    <string name="monitor_permission_ok">✓</string>
+    <string name="monitor_permission_missing">✗</string>
+    <string name="monitor_rule_unknown">未知</string>
+    <string name="monitor_update_current">被控端版本：%1$s（%2$d）· 已是当前版本</string>
+    <string name="monitor_update_waiting">远程更新：%1$s 已验证，等待被控端确认安装</string>
+    <string name="monitor_update_progress">远程更新：正在检查或下载</string>
+    <string name="monitor_update_failed">远程更新失败：%1$s（将自动重试）</string>
+    <string name="monitor_update_unknown_error">未知错误</string>
+    <string name="monitor_update_succeeded">远程更新成功：当前 %1$s</string>
+    <string name="monitor_update_pending">被控端版本：等待新版心跳上报</string>
+    <string name="monitor_device_diagnostics">设备：%1$s · Android %2$s\n电量：%3$s · 可用空间：%4$s · 已运行：%5$s</string>
+    <string name="monitor_charging">（充电中）</string>
+    <string name="monitor_uptime_hours">%1$d 小时</string>
+    <string name="monitor_diag_unknown">未知</string>
+    <string name="rules_copy_weekday">从周中规则复制</string>
+    <string name="rules_copied_weekday">已复制周中规则</string>
+    <string name="anomaly_type_accessibility_disabled">无障碍已关闭</string>
+    <string name="anomaly_type_accessibility_disconnected">无障碍服务失联</string>
+    <string name="anomaly_type_device_owner_missing">缺少设备所有者</string>
+    <string name="anomaly_type_uninstall_protection_missing">防卸载基线未生效</string>
+    <string name="anomaly_type_admin_disable_attempt">尝试停用设备管理员</string>
+    <string name="anomaly_type_accessibility_disable_attempt">尝试关闭无障碍</string>
+    <string name="anomaly_type_usage_access_attempt">尝试关闭使用情况访问</string>
+    <string name="anomaly_type_overlay_attempt">尝试关闭悬浮窗</string>
+    <string name="anomaly_type_autostart_attempt">尝试关闭自启动</string>
+    <string name="anomaly_type_overlay_disabled">悬浮窗权限已关闭</string>
+    <string name="anomaly_type_battery_optimization">电池优化限制已开启</string>
+    <string name="anomaly_type_autostart_unconfirmed">自启动尚未确认</string>
+    <string name="anomaly_type_rule_not_applied">规则长时间未生效</string>
+    <string name="anomaly_type_notification_disabled">通知权限已关闭</string>
+    <string name="anomaly_type_low_storage">存储空间不足</string>
 </resources>

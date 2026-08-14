@@ -1,0 +1,19 @@
+资产,类型,位置,是否进入Git历史,暴露范围,敏感等级,状态,处理建议
+Git提交作者信息,个人身份,全部29个提交 (git log --format="%an <%ae>"),是,公开仓库后将向所有人暴露,高,待决策,历史改写为匿名邮箱(需用户批准)或接受公开
+AGENTS.md 第74行,本地绝对路径,C:\Users\<USERNAME>\AppData\Local\Temp\opencode\...,是,公开仓库将暴露Windows用户名与路径,高,待处理,公开版移除该行/整文件;历史清理需用户批准
+docs/backup-before-fully-managed.md,设备标识+绝对路径,OPPO PDKM00 序列号 BALZYXPBVKVWE6HQ; C:\Users\<USERNAME>\PhoneGuard-Backups\,否(未跟踪),仅本地,高,待处理,不提交;加入.gitignore或移出仓库;如发布需脱敏改写
+keystore.properties,签名密码,仓库根目录,SHA256=E266CE4C...,否(gitignored),仅本地,高,安全,不提交;提供keystore.properties.example模板(占位符)
+phoneguard-release.keystore,APK签名私钥库,SHA256=06E7F30B...,否(gitignored),仅本地,高,安全,不提交;签名证书指纹SHA256=41091d46...为公开验证值,可保留
+release-keys/update-manifest-private.pem,更新清单签名私钥,SHA256=F6825208...,否(gitignored),仅本地,高,安全,不提交;对应公钥(MFkw...)为客户端内嵌公开值,可保留
+cloudbase.local.properties,CloudBase凭据(appAccessKey/账号/密码),SHA256=6C626BB3...,否(gitignored),仅本地,高,安全但建议轮换,不提交;建议轮换appAccessKey;提供cloudbase.local.properties.example模板
+core/.../CloudBaseTestConfig.kt,测试配置加载器(无凭据),SHA256=305FD5C9...,是,无敏感内容,低,可发布,保留(仅含envId示例与占位符)
+core/.../CloudBaseVerifyTest.kt,真实链路验证测试(无硬编码凭据),是,无敏感内容,低,可发布,保留(凭据从外部文件/环境变量读取)
+core/.../CloudBaseClient.kt 等后端源码,CloudBase API封装,是,无硬编码凭据,低,可发布,保留
+kid/.../KidUpdateManager.kt,更新客户端,是,仅含公开ECDSA公钥与托管URL,低,可发布,保留;环境ID见下方
+docs/provisioning/*.json + QR PNG,Device Owner配置,否(未跟踪),仅含公开参数(组件名/URL/校验和/证书指纹),低,可发布,保留(确认不含WLAN凭据与token)
+docs/updates/kid-stable-update-manifest.json,更新清单,否(未跟踪),仅含公开哈希与签名值,低,可发布,保留
+scripts/New-UpdateManifest.ps1,更新签名脚本,否(未跟踪),私钥路径为命令行参数,不含私钥内容,低,可发布,保留
+环境ID YOUR_ENV_ID,CloudBase环境标识,AGENTS.md/specs/代码URL/provisioning/update清单,是(部分),环境标识非密钥,但免费体验版可能被滥用,中,待决策,发布时改为占位符+自建环境指引,或保留并说明
+gradle.properties/.gitattributes/gradlew,构建配置,是,无敏感内容,低,可发布,保留
+build/ 下 APK 产物,构建产物,否(gitignored),仅本地,中,安全,不提交;发布时重新构建并生成SHA-256
+手机号/IMEI/IP/logcat/备份截图,敏感数据,未发现命中,否,无,低,无,不适用

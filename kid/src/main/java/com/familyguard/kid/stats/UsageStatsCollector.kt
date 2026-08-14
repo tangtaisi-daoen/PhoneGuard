@@ -1,10 +1,14 @@
 package com.familyguard.kid.stats
 
 import android.app.usage.UsageEvents
-import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import com.familyguard.core.stats.ForegroundEvent
+import com.familyguard.core.stats.ForegroundUsageCalculator
+import com.familyguard.core.stats.ForegroundUsageEvent
+import com.familyguard.core.stats.InstalledAppFilter
+import com.familyguard.core.stats.InstalledAppInfo
 import com.familyguard.core.stats.UsageAggregator
 import com.familyguard.core.stats.UsageEntry
 import java.text.SimpleDateFormat
@@ -43,25 +47,56 @@ object UsageStatsCollector {
     fun todayDate(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
+    /** 返回报告和规则引擎共同使用的普通应用白名单及名称。 */
+    fun visibleInstalledApps(context: Context): List<Pair<String, String>> {
+        val packageManager = context.packageManager
+        return InstalledAppFilter.displayable(
+            packageManager.getInstalledApplications(0).mapNotNull { app ->
+                runCatching {
+                    InstalledAppInfo(
+                        packageName = app.packageName,
+                        label = packageManager.getApplicationLabel(app).toString(),
+                        isSystemApp = (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
+                        hasLauncherEntry = packageManager.getLaunchIntentForPackage(app.packageName) != null,
+                    )
+                }.getOrNull()
+            },
+        )
+    }
+
     /** 采集当日各 app 使用记录（排除自身与系统）。 */
-    fun collectToday(context: Context): List<UsageEntry> {
+    fun collectToday(context: Context, visiblePackages: Set<String>): List<UsageEntry> {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
             ?: return emptyList()
         val start = todayStartMillis()
-        val stats: List<UsageStats> = usm.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY, start, System.currentTimeMillis(),
-        ) ?: return emptyList()
-        return stats
-            .filter { it.packageName !in excludedPackages }
-            .map { UsageEntry(it.packageName, it.totalTimeInForeground) }
+        val end = System.currentTimeMillis()
+        val events = usm.queryEvents(start - DAY_MILLIS, end) ?: return emptyList()
+        val raw = mutableListOf<ForegroundUsageEvent>()
+        val event = UsageEvents.Event()
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            if (event.packageName in excludedPackages) continue
+            if (event.packageName !in visiblePackages) continue
+            if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
+            ) {
+                raw += ForegroundUsageEvent(
+                    event.timeStamp,
+                    event.packageName,
+                    event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND,
+                )
+            }
+        }
+        return ForegroundUsageCalculator.minutesByPackage(raw, start, end)
+            .map { (packageName, minutes) -> UsageEntry(packageName, minutes * 60_000L) }
     }
 
     /** 当日各 app 分钟数（聚合后）。 */
-    fun collectTodayMinutes(context: Context): Map<String, Long> =
-        UsageAggregator.aggregateMinutes(collectToday(context))
+    fun collectTodayMinutes(context: Context, visiblePackages: Set<String>): Map<String, Long> =
+        UsageAggregator.aggregateMinutes(collectToday(context, visiblePackages))
 
     /** 当前前台 app（可能为 null）。 */
-    fun currentForegroundApp(context: Context): String? {
+    fun currentForegroundApp(context: Context, visiblePackages: Set<String>? = null): String? {
         val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
             ?: return null
         val events = usm.queryEvents(todayStartMillis(), System.currentTimeMillis())
@@ -73,7 +108,9 @@ object UsageStatsCollector {
             if (e.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
                 e.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
             ) {
-                if (e.packageName !in excludedPackages) {
+                if (e.packageName !in excludedPackages &&
+                    (visiblePackages == null || e.packageName in visiblePackages)
+                ) {
                     list.add(
                         ForegroundEvent(
                             e.timeStamp,
@@ -86,4 +123,6 @@ object UsageStatsCollector {
         }
         return UsageAggregator.currentForegroundApp(list)
     }
+
+    private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
 }

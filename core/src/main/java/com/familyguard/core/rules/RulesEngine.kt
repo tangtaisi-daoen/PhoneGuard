@@ -42,7 +42,9 @@ object RulesEngine {
         todayUsedByCategory: Long,
         todayUsedTotal: Long,
         now: LocalTime,
+        extraAllowanceMillis: Long = 0L,
     ): AppVerdict {
+        val allowance = extraAllowanceMillis.coerceAtLeast(0L)
         val appLimit = rules.appLimits.firstOrNull { it.packageName == packageName }
 
         // 1. 禁玩时段检查
@@ -59,7 +61,7 @@ object RulesEngine {
         // 2. 单 app 限时
         appLimit?.let { limit ->
             if (limit.dailyMinutes > 0) {
-                val left = limit.dailyMinutes * 60_000L - todayUsedByApp
+                val left = limit.dailyMinutes * 60_000L - todayUsedByApp + allowance
                 if (left <= 0) return AppVerdict(0, true, "本应用今日时长已用完")
                 if (left < remaining) {
                     remaining = left
@@ -71,7 +73,7 @@ object RulesEngine {
         // 3. 类别共享额度
         rules.categoryLimits.firstOrNull { it.category == category }?.let { cl ->
             if (cl.dailyMinutes > 0) {
-                val left = cl.dailyMinutes * 60_000L - todayUsedByCategory
+                val left = cl.dailyMinutes * 60_000L - todayUsedByCategory + allowance
                 if (left <= 0) return AppVerdict(0, true, "${categoryName(category)}类今日时长已用完")
                 if (left < remaining) {
                     remaining = left
@@ -82,7 +84,7 @@ object RulesEngine {
 
         // 4. 每日总额
         if (rules.dailyTotal.totalMinutes > 0) {
-            val left = rules.dailyTotal.totalMinutes * 60_000L - todayUsedTotal
+            val left = rules.dailyTotal.totalMinutes * 60_000L - todayUsedTotal + allowance
             if (left <= 0) return AppVerdict(0, true, "今日娱乐总额已用完")
             if (left < remaining) {
                 remaining = left

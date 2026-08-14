@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -10,6 +11,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/anomaly_refresh" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAcknowledgeAnomaly"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/anomaly_acknowledge_all" />
+
+    <TextView
+        android:id="@+id/tvAnomalySummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,6 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
+            android:textColor="@color/text_primary"
             android:textSize="14sp" />
     </ScrollView>
 </LinearLayout>

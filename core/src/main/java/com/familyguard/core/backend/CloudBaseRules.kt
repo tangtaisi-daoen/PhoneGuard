@@ -1,6 +1,8 @@
 package com.familyguard.core.backend
 
 import com.familyguard.core.data.RuleSet
+import com.familyguard.core.data.RuleSetEnvelope
+import com.familyguard.core.rules.RuleEnvelopeCodec
 import com.familyguard.core.rules.RuleCodec
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -41,6 +43,29 @@ object CloudBaseRules {
         }
     }
 
+    suspend fun saveEnvelope(
+        client: CloudBaseClient,
+        adminUid: String,
+        envelope: RuleSetEnvelope,
+    ): Boolean {
+        val envelopeJson = gson.toJsonTree(envelope).asJsonObject
+        val existing = CloudBaseDb.queryDocuments(
+            client, COLLECTION, where = mapOf("adminUid" to adminUid), limit = 1,
+        ) ?: return false
+        val data = mapOf("ruleEnvelope" to envelopeJson, "updatedAt" to System.currentTimeMillis())
+        return if (existing.isEmpty()) {
+            val doc = mutableMapOf<String, Any?>("adminUid" to adminUid)
+            doc.putAll(data)
+            !CloudBaseDb.insertDocuments(client, COLLECTION, listOf(doc)).isNullOrEmpty()
+        } else {
+            val docId = existing.first()["_id"]?.toString() ?: return false
+            val updated = CloudBaseDb.updateDocuments(
+                client, COLLECTION, where = mapOf("_id" to docId), data = data,
+            )
+            updated != null && updated > 0
+        }
+    }
+
     /** 拉取管理端的规则；不存在返回空 RuleSet。 */
     suspend fun fetchRules(client: CloudBaseClient, adminUid: String): RuleSet? {
         val docs = CloudBaseDb.queryDocuments(
@@ -49,5 +74,16 @@ object CloudBaseRules {
         val doc = docs.firstOrNull() ?: return RuleSet()
         val ruleJson = doc["ruleSet"] as? JsonObject ?: return RuleSet()
         return RuleCodec.parse(ruleJson)
+    }
+
+    suspend fun fetchEnvelope(client: CloudBaseClient, adminUid: String): RuleSetEnvelope? {
+        val docs = CloudBaseDb.queryDocuments(
+            client, COLLECTION, where = mapOf("adminUid" to adminUid), limit = 1,
+        ) ?: return null
+        val doc = docs.firstOrNull() ?: return RuleSetEnvelope()
+        val envelopeJson = doc["ruleEnvelope"] as? JsonObject
+        if (envelopeJson != null) return RuleEnvelopeCodec.parseCompatible(envelopeJson)
+        val legacyJson = doc["ruleSet"] as? JsonObject ?: return RuleSetEnvelope()
+        return RuleEnvelopeCodec.parseCompatible(legacyJson)
     }
 }
