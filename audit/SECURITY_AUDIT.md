@@ -8,7 +8,7 @@
 
 | 编号 | 级别 | 风险 | 位置 | 处理 |
 |---|---|---|---|---|
-| **H1** | **Critical** | **后端数据权限全开放（已实测）：bindings/rules/events/usage 四集合安全规则均为 `{"read":true,"write":true}`，任何互联网用户（含匿名）可读取全部家庭数据并篡改；公开仓库后环境 ID 公开即完全暴露** | CloudBase 控制台安全规则（CLI 实测 2026-08-14） | **阶段六执行字段级规则改造**（方案见 BACKEND_RULES_AUDIT.md §3a）+ 配套代码改动（usage/events 附带 adminUid），执行前用户确认 |
+| **H1** | **Critical→（发布形态变更后降级）** | **后端数据权限全开放（已实测）：bindings/rules/events/usage/apps 五集合安全规则均为 `{"read":true,"write":true}`。2026-08-14 用户决策改为纯自托管发布（APK 不内置真实环境 ID），"公开即暴露"路径切断 → 降级为自有环境加固建议（代码侧修复已完成，线上规则应用待用户控制台操作，指引见 BACKEND_RULES_AUDIT.md §3a/3b）** | CloudBase 控制台安全规则 | 代码侧已完成并提交；线上规则按 §3b 指引应用 |
 | H2 | High | 绑定无调用者身份约束：6 位邀请码（32 字符集）即唯一凭证；泄露/被猜中可抢先绑定；kidDeviceId 自报可冒名上报；刷新邀请码不使旧码失效（旧 PENDING 码长期有效） | CloudBaseBindings.generateInviteCode / bindWithCode | 建议：绑定校验管理员身份字段、刷新码时旧码置失效、邀请码有效期；评估服务端限流 |
 | M1 | Medium | 会话 token 明文存 SharedPreferences（MODE_PRIVATE） | SessionStore.kt（注释已自标） | allowBackup=false 已缓解备份提取；root 设备仍可读；**发布前升级 EncryptedSharedPreferences 或记录为已知限制** |
 | M2 | Medium | 匿名身份 x-device-id 自报，可伪造（知晓 deviceId 可冒名上报使用数据/事件） | CloudBaseAuth.signInAnonymously | 风险依赖 CloudBase 对 x-device-id 的处理；缓解：deviceId 16 位随机不易猜 |

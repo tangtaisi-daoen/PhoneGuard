@@ -33,9 +33,11 @@
 
 ## 3b. 规则应用执行记录（2026-08-14）
 
-- 代码侧修复（usage/events/apps 附带 adminUid、rules 双归属字段、kid 按 kidDeviceId 拉规则、DiagActivity 适配）：**全部完成，:core/:admin/:kid 测试与构建通过**。
-- 线上规则应用：CloudBase CLI（当前登录态）可查询（DescribeDatabaseACL 成功）但 **SecurityRule 系 API 报 `Env Not Exists In Your Account`**——登录凭证非环境所属账号或子账号缺 CAM 权限，**无法经 CLI 应用规则**。
-- 待用户执行（二选一）：
+- **发布形态决策（用户确认）**：开源发布采用**纯自托管**——APK 不内置真实环境 ID（构建时注入，默认占位符），公开仓库不含真实 envId/托管 URL。因此 H1 的"公开即暴露"路径已切断。
+- **H1 状态调整**：由"发布门禁（Critical）"降级为"自有环境加固建议（High→Medium）"——你的环境仍建议应用字段级规则（防已注册用户横向读取、防环境 ID 泄露面），但不阻塞开源发布。
+- 代码侧修复（usage/events/apps 附带 adminUid、rules 双归属字段、kid 按 kidDeviceId 拉规则、DiagActivity 适配）：**全部完成并已提交**（:core/:admin/:kid 测试与构建通过）。
+- 线上规则应用：CloudBase CLI（当前登录态）可查询但 **SecurityRule 系 API 报 `Env Not Exists In Your Account`**（登录凭证非环境所属账号或子账号缺 CAM 权限），无法经 CLI 应用。
+- 待用户执行（二选一，任意时间）：
   A. 控制台手动应用（推荐）：云开发控制台 → 数据库 → 各集合 → 安全规则 → 选择"自定义安全规则"并粘贴 §3a 的 JSON；
   B. 用户用环境所属账号重新执行 `cloudbase login` 后由 CLI 应用（ModifySecurityRule，参数见 §3a）。
 
