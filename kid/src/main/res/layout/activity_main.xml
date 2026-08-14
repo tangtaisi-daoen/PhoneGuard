@@ -93,4 +93,12 @@
             android:layout_marginTop="8dp"
             android:text="@string/check_update" />
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAbout"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/about" />
 </LinearLayout>

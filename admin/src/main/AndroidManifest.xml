@@ -39,6 +39,9 @@
         <activity
             android:name=".AnomalyActivity"
             android:exported="false" />
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
         <service
             android:name=".notify.AdminNotifyService"
             android:foregroundServiceType="dataSync"

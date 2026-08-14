@@ -54,4 +54,15 @@
     <string name="update_ready">已验证 %1$s，即将打开系统安装页</string>
     <string name="update_failed">更新失败：%1$s</string>
     <string name="update_allow_source">请先允许“手机守护”安装应用，返回后再点检查更新</string>
+    <string name="about">关于</string>
+    <string name="about_title">关于</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_license_title">许可证</string>
+    <string name="about_license_body">本应用以 GNU AGPL-3.0-or-later 许可证发布：您可以自由使用、修改与再分发；若基于本应用对外提供网络服务，须以相同许可证向服务使用者提供完整源码。许可证全文见项目仓库 LICENSE 文件。</string>
+    <string name="about_source_title">源码获取</string>
+    <string name="about_source_body">完整源码、许可证全文与构建说明可在项目仓库获取：\nhttps://github.com/tangtaisi-daoen/PhoneGuard</string>
+    <string name="about_privacy_title">隐私政策</string>
+    <string name="about_privacy_body">本应用的数据处理方式见仓库内 PRIVACY_POLICY_DRAFT.md（生效日期以发布公告为准）。</string>
+    <string name="about_third_party_title">第三方声明</string>
+    <string name="about_third_party_body">第三方依赖与参考来源声明见仓库内 THIRD_PARTY_NOTICES.md。</string>
 </resources>

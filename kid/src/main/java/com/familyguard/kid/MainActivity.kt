@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnBind.setOnClickListener { doBind() }
         binding.btnGuide.setOnClickListener { openGuide() }
         binding.btnCheckUpdate.setOnClickListener { checkForUpdate() }
+        binding.btnAbout.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
+        }
         binding.tvUpdateStatus.text = getString(R.string.update_status_idle, BuildConfig.VERSION_NAME)
         if (intent?.action == KidUpdateManager.ACTION_CHECK_UPDATE) {
             checkForUpdate()

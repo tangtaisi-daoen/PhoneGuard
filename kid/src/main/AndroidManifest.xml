@@ -124,6 +124,9 @@
             android:name=".guide.GuideActivity"
             android:exported="false" />
         <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+        <activity
             android:name=".guard.BlockActivity"
             android:excludeFromRecents="true"
             android:exported="false"

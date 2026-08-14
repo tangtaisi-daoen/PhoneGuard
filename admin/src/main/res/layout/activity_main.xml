@@ -222,6 +222,14 @@
             android:text="@string/diag" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAbout"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/about" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"

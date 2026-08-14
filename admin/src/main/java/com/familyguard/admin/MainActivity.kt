@@ -48,6 +48,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnDiag.setOnClickListener {
             startActivity(Intent(this, DiagActivity::class.java))
         }
+        binding.btnAbout.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
+        }
         binding.btnRules.setOnClickListener {
             startActivity(Intent(this, RulesActivity::class.java))
         }
