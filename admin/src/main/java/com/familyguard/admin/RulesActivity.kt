@@ -170,9 +170,7 @@ class RulesActivity : AppCompatActivity() {
         )
         binding.btnSave.isEnabled = false
         lifecycleScope.launch {
-            // 附带当前绑定被控端 uid：kid 按 kidDeviceId 拉取规则（安全规则字段级放行）
-            val boundKidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
-            val ok = CloudBaseRules.saveEnvelope(AdminApp.client, uid, envelope, kidDeviceId = boundKidId)
+            val ok = CloudBaseRules.saveEnvelope(AdminApp.client, uid, envelope)
             binding.btnSave.isEnabled = true
             Toast.makeText(
                 this@RulesActivity,
