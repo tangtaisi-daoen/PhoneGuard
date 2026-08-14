@@ -15,3 +15,4 @@ phoneguard-release.keystore
 keystore.properties
 release-keys/update-manifest-private.pem
 docs/backup-before-fully-managed.md
+cloudbaserc.json
