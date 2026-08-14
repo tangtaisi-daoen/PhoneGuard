@@ -43,4 +43,19 @@ class CloudBaseEventsCodecTest {
         assertEquals(3_000L, decoded?.firstSeenAt)
         assertEquals(1, decoded?.occurrenceCount)
     }
+
+    @Test
+    fun `incident document carries adminUid only when provided`() {
+        val incident = AnomalyEvent(
+            type = "TIME_CHANGED",
+            message = "时间被修改",
+            occurredAt = 1_000,
+        )
+
+        val withOwner = incidentDocument("kid-1", incident, adminUid = "admin-9")
+        assertEquals("admin-9", withOwner["adminUid"])
+
+        val withoutOwner = incidentDocument("kid-1", incident)
+        assertEquals(false, withoutOwner.containsKey("adminUid"))
+    }
 }

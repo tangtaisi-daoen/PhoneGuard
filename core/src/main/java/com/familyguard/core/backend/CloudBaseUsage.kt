@@ -17,7 +17,7 @@ object CloudBaseUsage {
 
     private const val COLLECTION = "usage"
 
-    /** 上报/覆盖当日心跳快照。 */
+    /** 上报/覆盖当日心跳快照。adminUid 为绑定管理员（安全规则按 doc.adminUid 放行管理端读取）。 */
     suspend fun upsertHeartbeat(
         client: CloudBaseClient,
         kidDeviceId: String,
@@ -25,6 +25,7 @@ object CloudBaseUsage {
         byPackage: Map<String, Long>,
         totalMinutes: Long,
         currentApp: String?,
+        adminUid: String? = null,
         appliedRuleRevision: Long = 0L,
         evaluatedLocalDate: String = "",
         evaluatedProfile: String = "",
@@ -94,9 +95,11 @@ object CloudBaseUsage {
             "availableStorageBytes" to availableStorageBytes,
             "deviceUptimeMs" to deviceUptimeMs,
         )
+        // 归属字段（安全规则按 doc.adminUid 放行管理端读取；仅绑定后非空）
+        val dataWithOwner = if (adminUid.isNullOrBlank()) data else data + ("adminUid" to adminUid)
         return if (existing.isEmpty()) {
             val doc = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "date" to date)
-            doc.putAll(data)
+            doc.putAll(dataWithOwner)
             val inserted = CloudBaseDb.insertDocuments(client, COLLECTION, listOf(doc))
             inserted != null && inserted.isNotEmpty()
         } else {
@@ -104,7 +107,7 @@ object CloudBaseUsage {
             val updated = CloudBaseDb.updateDocuments(
                 client, COLLECTION,
                 where = mapOf("_id" to docId),
-                data = data,
+                data = dataWithOwner,
             )
             updated != null && updated > 0
         }

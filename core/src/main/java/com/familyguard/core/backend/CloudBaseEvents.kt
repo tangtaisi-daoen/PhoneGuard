@@ -19,12 +19,13 @@ object CloudBaseEvents {
 
     private const val COLLECTION = "events"
 
-    /** 上报异常事件。 */
+    /** 上报异常事件。adminUid 为绑定管理员（安全规则按 doc.adminUid 放行管理端读取）。 */
     suspend fun report(
         client: CloudBaseClient,
         kidDeviceId: String,
         type: String,
         message: String,
+        adminUid: String? = null,
     ): Boolean {
         val now = System.currentTimeMillis()
         val existingDocs = CloudBaseDb.queryDocuments(
@@ -41,14 +42,14 @@ object CloudBaseEvents {
             return !CloudBaseDb.insertDocuments(
                 client,
                 COLLECTION,
-                listOf(incidentDocument(kidDeviceId, next)),
+                listOf(incidentDocument(kidDeviceId, next, adminUid)),
             ).isNullOrEmpty()
         }
         val updated = CloudBaseDb.updateDocuments(
             client,
             COLLECTION,
             where = mapOf("_id" to existing.id),
-            data = incidentDocument(kidDeviceId, next),
+            data = incidentDocument(kidDeviceId, next, adminUid),
         )
         return updated != null && updated > 0
     }
@@ -133,13 +134,14 @@ object CloudBaseEvents {
         }
     }
 
-    /** 一次查询对账所有健康条件：新异常开启、持续异常节流刷新、恢复条件自动关闭。 */
+    /** 一次查询对账所有健康条件：新异常开启、持续异常节流刷新、恢复条件自动关闭。adminUid 供新事件写入归属字段。 */
     suspend fun reconcileConditions(
         client: CloudBaseClient,
         kidDeviceId: String,
         activeConditions: Map<String, String>,
         managedTypes: Set<String>,
         refreshIntervalMs: Long = 5 * 60_000L,
+        adminUid: String? = null,
     ): Boolean {
         val docs = CloudBaseDb.queryDocuments(
             client,
@@ -159,14 +161,14 @@ object CloudBaseEvents {
                 !CloudBaseDb.insertDocuments(
                     client,
                     COLLECTION,
-                    listOf(incidentDocument(kidDeviceId, incident)),
+                    listOf(incidentDocument(kidDeviceId, incident, adminUid)),
                 ).isNullOrEmpty()
             } else {
                 val updated = CloudBaseDb.updateDocuments(
                     client,
                     COLLECTION,
                     where = mapOf("_id" to incident.id),
-                    data = incidentDocument(kidDeviceId, incident),
+                    data = incidentDocument(kidDeviceId, incident, adminUid),
                 )
                 updated != null && updated > 0
             }
@@ -176,7 +178,7 @@ object CloudBaseEvents {
                 client,
                 COLLECTION,
                 where = mapOf("_id" to incident.id),
-                data = incidentDocument(kidDeviceId, incident),
+                data = incidentDocument(kidDeviceId, incident, adminUid),
             )
             updated != null && updated > 0
         }
@@ -184,20 +186,29 @@ object CloudBaseEvents {
     }
 }
 
-internal fun incidentDocument(kidDeviceId: String, incident: AnomalyEvent): Map<String, Any?> = mapOf(
-    "kidDeviceId" to kidDeviceId,
-    "type" to incident.type,
-    "message" to incident.message,
-    "occurredAt" to incident.occurredAt,
-    "dedupKey" to incident.dedupKey,
-    "status" to incident.status.name,
-    "firstSeenAt" to incident.firstSeenAt,
-    "lastSeenAt" to incident.lastSeenAt,
-    "acknowledgedAt" to incident.acknowledgedAt,
-    "resolvedAt" to incident.resolvedAt,
-    "occurrenceCount" to incident.occurrenceCount,
-    "read" to incident.read,
-)
+internal fun incidentDocument(
+    kidDeviceId: String,
+    incident: AnomalyEvent,
+    adminUid: String? = null,
+): Map<String, Any?> {
+    val doc = mutableMapOf<String, Any?>(
+        "kidDeviceId" to kidDeviceId,
+        "type" to incident.type,
+        "message" to incident.message,
+        "occurredAt" to incident.occurredAt,
+        "dedupKey" to incident.dedupKey,
+        "status" to incident.status.name,
+        "firstSeenAt" to incident.firstSeenAt,
+        "lastSeenAt" to incident.lastSeenAt,
+        "acknowledgedAt" to incident.acknowledgedAt,
+        "resolvedAt" to incident.resolvedAt,
+        "occurrenceCount" to incident.occurrenceCount,
+        "read" to incident.read,
+    )
+    // 归属字段（安全规则按 doc.adminUid 放行管理端读取；仅绑定后非空）
+    if (!adminUid.isNullOrBlank()) doc["adminUid"] = adminUid
+    return doc
+}
 
 internal fun incidentFromDocument(doc: Map<String, Any?>): AnomalyEvent? {
     val type = doc["type"]?.toString() ?: return null

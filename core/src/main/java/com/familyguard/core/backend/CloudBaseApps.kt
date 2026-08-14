@@ -16,8 +16,13 @@ object CloudBaseApps {
 
     private const val COLLECTION = "apps"
 
-    /** 上报已装应用列表（upsert）。 */
-    suspend fun upsert(client: CloudBaseClient, kidDeviceId: String, apps: List<Pair<String, String>>): Boolean {
+    /** 上报已装应用列表（upsert）。adminUid 为绑定管理员（安全规则按 doc.adminUid 放行管理端读取）。 */
+    suspend fun upsert(
+        client: CloudBaseClient,
+        kidDeviceId: String,
+        apps: List<Pair<String, String>>,
+        adminUid: String? = null,
+    ): Boolean {
         val existing = CloudBaseDb.queryDocuments(
             client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = 1,
         ) ?: return false
@@ -28,7 +33,9 @@ object CloudBaseApps {
             o.addProperty("name", name)
             list.add(o)
         }
-        val data = mapOf("apps" to list, "updatedAt" to System.currentTimeMillis())
+        val data = mutableMapOf<String, Any?>("apps" to list, "updatedAt" to System.currentTimeMillis())
+        // 归属字段（安全规则按 doc.adminUid 放行管理端读取；仅绑定后非空）
+        if (!adminUid.isNullOrBlank()) data["adminUid"] = adminUid
         return if (existing.isEmpty()) {
             val doc = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
             doc.putAll(data)
