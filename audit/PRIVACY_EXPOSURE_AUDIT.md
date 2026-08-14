@@ -31,7 +31,7 @@
 ### 3.2 AGENTS.md 含 Windows 绝对路径（已进入 Git 历史）
 
 - `AGENTS.md` 第 74 行含 `C:\Users\<USERNAME>\AppData\Local\Temp\opencode\...` 路径，该文件被 Git 跟踪，路径已随提交进入历史。
-- **暴露范围**：仓库公开后 Windows 用户名（12901）与本地目录结构可见。
+- **暴露范围**：仓库公开后 Windows 用户名（<USERNAME>）与本地目录结构可见。
 - **处理**：公开版移除该行（或整个 AGENTS.md 不纳入公开仓库——其为本地 AI 代理工作指令，对公开用户无意义）；若要求历史中也无此路径，需改写历史（用户批准）。
 
 ### 3.3 docs/backup-before-fully-managed.md 含真实设备标识（未跟踪，未进入历史）
