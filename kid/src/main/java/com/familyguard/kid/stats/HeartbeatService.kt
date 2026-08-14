@@ -66,6 +66,7 @@ class HeartbeatService : Service() {
     private val lastAnomalyReportedAt = mutableMapOf<String, Long>()
     private var lastHealthConditions: Map<String, String>? = null
     private var lastHealthReconciledAt = 0L
+    private var ownershipBackfillAdminUid: String? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -131,13 +132,24 @@ class HeartbeatService : Service() {
         // 匿名登录（refresh_token 长期有效，失败重试下次）
         val auth = CloudBaseAuth.signInAnonymously(KidApp.client, SessionStore.deviceId) ?: return
         val uid = auth.userId
+        val boundAdminUid = SessionStore.boundAdminUid
+
+        // 旧数据没有 adminUid 时，由被控端按自身 kidDeviceId 权限补写归属字段。
+        if (!boundAdminUid.isNullOrBlank() && ownershipBackfillAdminUid != boundAdminUid) {
+            val backfillOk = CloudBaseUsage.ensureAdminUid(KidApp.client, uid, boundAdminUid) &&
+                CloudBaseEvents.ensureAdminUid(KidApp.client, uid, boundAdminUid) &&
+                CloudBaseApps.ensureAdminUid(KidApp.client, uid, boundAdminUid)
+            if (backfillOk) ownershipBackfillAdminUid = boundAdminUid
+        }
 
         // 同步刷新规则缓存（拦截服务使用，断网兜底旧规则）
-        SessionStore.boundAdminUid?.let { adminUid ->
-            CloudBaseRules.fetchEnvelope(KidApp.client, adminUid)?.let { envelope ->
-                RuleCacheStore.save(envelope)
+        var fetchedEnvelope = CloudBaseRules.fetchEnvelopeForKid(KidApp.client, uid)
+        if (fetchedEnvelope == null || fetchedEnvelope.revision == 0L) {
+            fetchedEnvelope = boundAdminUid?.let { adminUid ->
+                CloudBaseRules.fetchEnvelope(KidApp.client, adminUid)
             }
         }
+        fetchedEnvelope?.let { envelope -> RuleCacheStore.save(envelope) }
 
         val apps = UsageStatsCollector.visibleInstalledApps(this)
         val visiblePackages = apps.mapTo(mutableSetOf()) { it.first }
@@ -170,6 +182,7 @@ class HeartbeatService : Service() {
         CloudBaseUsage.upsertHeartbeat(
             KidApp.client, uid,
             UsageStatsCollector.todayDate(), byPackage, total, current,
+            adminUid = boundAdminUid,
             appliedRuleRevision = ruleEnvelope?.revision ?: 0L,
             evaluatedLocalDate = evaluatedDate.toString(),
             evaluatedProfile = ruleEnvelope?.profileFor(evaluatedDate)?.name.orEmpty(),
@@ -205,7 +218,7 @@ class HeartbeatService : Service() {
 
         // 已装应用列表上报（管理端规则选择用）
         runCatching {
-            CloudBaseApps.upsert(KidApp.client, uid, apps)
+            CloudBaseApps.upsert(KidApp.client, uid, apps, adminUid = boundAdminUid)
         }
 
         // 防护异常检测
@@ -356,6 +369,7 @@ class HeartbeatService : Service() {
                 uid,
                 activeConditions,
                 MANAGED_HEALTH_INCIDENT_TYPES,
+                adminUid = SessionStore.boundAdminUid,
             )
         ) {
             lastHealthConditions = activeConditions.toMap()
@@ -406,7 +420,13 @@ class HeartbeatService : Service() {
 
     private suspend fun reportProtectionAttempt(uid: String) {
         val attempt = ProtectionAttemptStore.pending(this) ?: return
-        if (CloudBaseEvents.report(KidApp.client, uid, attempt.type, attempt.message)) {
+        if (CloudBaseEvents.report(
+                KidApp.client,
+                uid,
+                attempt.type,
+                attempt.message,
+                adminUid = SessionStore.boundAdminUid,
+            )) {
             ProtectionAttemptStore.clear(this)
         }
     }
@@ -415,7 +435,13 @@ class HeartbeatService : Service() {
         val now = System.currentTimeMillis()
         val previous = lastAnomalyReportedAt[type] ?: 0L
         if (now - previous < ANOMALY_REPORT_INTERVAL_MS) return
-        if (CloudBaseEvents.report(KidApp.client, uid, type, message)) {
+        if (CloudBaseEvents.report(
+                KidApp.client,
+                uid,
+                type,
+                message,
+                adminUid = SessionStore.boundAdminUid,
+            )) {
             lastAnomalyReportedAt[type] = now
         }
     }

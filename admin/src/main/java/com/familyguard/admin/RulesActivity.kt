@@ -116,7 +116,7 @@ class RulesActivity : AppCompatActivity() {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_not_bound, Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId)
+            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId, adminUid = uid)
             pickerLoading = false
             if (apps == null) {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_failed, Toast.LENGTH_SHORT).show()
@@ -170,7 +170,8 @@ class RulesActivity : AppCompatActivity() {
         )
         binding.btnSave.isEnabled = false
         lifecycleScope.launch {
-            val ok = CloudBaseRules.saveEnvelope(AdminApp.client, uid, envelope)
+            val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
+            val ok = CloudBaseRules.saveEnvelope(AdminApp.client, uid, envelope, kidDeviceId = kidId)
             binding.btnSave.isEnabled = true
             Toast.makeText(
                 this@RulesActivity,
@@ -332,7 +333,7 @@ class RulesActivity : AppCompatActivity() {
         pickerLoading = true
         lifecycleScope.launch {
             val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid)
-            val apps = kidId?.let { CloudBaseApps.fetchOrNull(AdminApp.client, it) }
+            val apps = kidId?.let { CloudBaseApps.fetchOrNull(AdminApp.client, it, adminUid = uid) }
             pickerLoading = false
             if (apps.isNullOrEmpty()) {
                 Toast.makeText(this@RulesActivity, R.string.rules_pick_empty, Toast.LENGTH_SHORT).show()
@@ -405,7 +406,7 @@ class RulesActivity : AppCompatActivity() {
     private fun refreshKnownAppNames(uid: String) {
         lifecycleScope.launch {
             val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid) ?: return@launch
-            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId) ?: return@launch
+            val apps = CloudBaseApps.fetchOrNull(AdminApp.client, kidId, adminUid = uid) ?: return@launch
             knownApps = apps.toMap()
             var changed = false
             adapter.rows.forEach { row ->

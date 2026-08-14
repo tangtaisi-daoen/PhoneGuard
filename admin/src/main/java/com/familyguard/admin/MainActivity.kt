@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.familyguard.admin.databinding.ActivityMainBinding
 import com.familyguard.admin.notify.AdminNotifyService
 import com.familyguard.core.backend.CloudBaseBindings
+import com.familyguard.core.backend.CloudBaseRules
 import com.familyguard.core.session.SessionStore
 import kotlinx.coroutines.launch
 
@@ -64,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         binding.tvInviteCode.setOnClickListener { copyInviteCode() }
 
         loadInviteCode()
+        ensureRuleOwnership()
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU ||
             checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
             android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -105,6 +107,15 @@ class MainActivity : AppCompatActivity() {
                 showCode(code)
             }
             binding.btnRefreshCode.isEnabled = true
+        }
+    }
+
+    /** 为旧 rules 文档补写 kidDeviceId，使被控端可按自身身份读取规则。 */
+    private fun ensureRuleOwnership() {
+        val uid = SessionStore.userId ?: return
+        lifecycleScope.launch {
+            val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid) ?: return@launch
+            CloudBaseRules.ensureKidDeviceId(AdminApp.client, uid, kidId)
         }
     }
 

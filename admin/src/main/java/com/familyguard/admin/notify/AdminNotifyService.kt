@@ -70,7 +70,7 @@ class AdminNotifyService : Service() {
         val kidId = CloudBaseBindings.getBoundKidDeviceId(AdminApp.client, uid) ?: return
 
         // 离线检测：心跳超过 5 分钟未更新 → 通知一次（5 分钟内不重复）
-        val snapshot = CloudBaseUsage.fetchLatest(AdminApp.client, kidId)
+        val snapshot = CloudBaseUsage.fetchLatest(AdminApp.client, kidId, adminUid = uid)
         val now = System.currentTimeMillis()
         val offline = snapshot != null && now - snapshot.reportedAt > OFFLINE_THRESHOLD_MS
         val offlineConditions = if (offline) {
@@ -90,6 +90,7 @@ class AdminNotifyService : Service() {
                 activeConditions = offlineConditions,
                 managedTypes = setOf("OFFLINE"),
                 refreshIntervalMs = OFFLINE_NOTIFY_INTERVAL_MS,
+                adminUid = uid,
             )
         ) {
             lastOfflineConditions = offlineConditions
@@ -125,16 +126,17 @@ class AdminNotifyService : Service() {
                     },
                     managedTypes = setOf("RULE_NOT_APPLIED"),
                     refreshIntervalMs = OFFLINE_NOTIFY_INTERVAL_MS,
+                    adminUid = uid,
                 )
                 lastRuleCheckAt = now
             }
         }
 
         // 异常事件轮询
-        val events = CloudBaseEvents.fetchUnread(AdminApp.client, kidId)
+        val events = CloudBaseEvents.fetchUnread(AdminApp.client, kidId, adminUid = uid)
         if (events.isEmpty()) return
         notifyAnomalies(events)
-        CloudBaseEvents.markAllRead(AdminApp.client, kidId)
+        CloudBaseEvents.markAllRead(AdminApp.client, kidId, adminUid = uid)
     }
 
     private fun notifyOffline(lastHeartbeatAt: Long) {

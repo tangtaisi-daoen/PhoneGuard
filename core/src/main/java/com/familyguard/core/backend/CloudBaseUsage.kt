@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
  * 使用量心跳上报（usage 集合）。
  *
  * 文档结构（kidDeviceId + date 唯一，覆盖更新）：
+ *   adminUid: String（绑定管理员 uid，管理端读取授权字段）
  *   kidDeviceId: String（被控端匿名 uid）
  *   date: String（yyyy-MM-dd）
  *   byPackage: {pkg: minutes}（当日各 app 分钟数）
@@ -25,6 +26,7 @@ object CloudBaseUsage {
         byPackage: Map<String, Long>,
         totalMinutes: Long,
         currentApp: String?,
+        adminUid: String? = null,
         appliedRuleRevision: Long = 0L,
         evaluatedLocalDate: String = "",
         evaluatedProfile: String = "",
@@ -94,26 +96,45 @@ object CloudBaseUsage {
             "availableStorageBytes" to availableStorageBytes,
             "deviceUptimeMs" to deviceUptimeMs,
         )
+        val dataWithOwner = if (adminUid.isNullOrBlank()) {
+            data
+        } else {
+            data + ("adminUid" to adminUid)
+        }
         return if (existing.isEmpty()) {
-            val doc = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "date" to date)
-            doc.putAll(data)
+            val doc = mutableMapOf<String, Any?>(
+                "adminUid" to adminUid,
+                "kidDeviceId" to kidDeviceId,
+                "date" to date,
+            )
+            if (adminUid.isNullOrBlank()) doc.remove("adminUid")
+            doc.putAll(dataWithOwner)
             val inserted = CloudBaseDb.insertDocuments(client, COLLECTION, listOf(doc))
             inserted != null && inserted.isNotEmpty()
         } else {
             val docId = existing.first()["_id"]?.toString() ?: return false
+            val existingAdminUid = existing.first()["adminUid"]?.toString().orEmpty()
+            val updateData = if (existingAdminUid.isBlank()) dataWithOwner else data
             val updated = CloudBaseDb.updateDocuments(
                 client, COLLECTION,
-                where = mapOf("_id" to docId),
-                data = data,
+                where = mapOf("_id" to docId, "kidDeviceId" to kidDeviceId, "date" to date),
+                data = updateData,
             )
             updated != null && updated > 0
         }
     }
 
     /** 拉取被控端最近一条心跳快照。 */
-    suspend fun fetchLatest(client: CloudBaseClient, kidDeviceId: String): HeartbeatSnapshot? {
+    suspend fun fetchLatest(
+        client: CloudBaseClient,
+        kidDeviceId: String,
+        adminUid: String? = null,
+    ): HeartbeatSnapshot? {
         val docs = CloudBaseDb.queryDocuments(
-            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = 100,
+            client,
+            COLLECTION,
+            where = ownershipWhere(kidDeviceId, adminUid),
+            limit = 100,
         ) ?: return null
         return docs.map(::heartbeatSnapshotFromDocument).maxByOrNull { it.reportedAt }
     }
@@ -123,12 +144,45 @@ object CloudBaseUsage {
         client: CloudBaseClient,
         kidDeviceId: String,
         limit: Int = 100,
+        adminUid: String? = null,
     ): List<HeartbeatSnapshot>? {
         val docs = CloudBaseDb.queryDocuments(
-            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = limit.coerceIn(1, 100),
+            client,
+            COLLECTION,
+            where = ownershipWhere(kidDeviceId, adminUid),
+            limit = limit.coerceIn(1, 100),
         ) ?: return null
         return docs.map(::heartbeatSnapshotFromDocument).sortedByDescending { it.reportedAt }
     }
+
+    /** 被控端为历史快照补写管理员归属，供安全规则迁移使用。 */
+    suspend fun ensureAdminUid(
+        client: CloudBaseClient,
+        kidDeviceId: String,
+        adminUid: String,
+    ): Boolean {
+        if (adminUid.isBlank()) return false
+        val docs = CloudBaseDb.queryDocuments(
+            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = 100,
+        ) ?: return false
+        return docs.filter { it["adminUid"]?.toString().isNullOrBlank() }.all { doc ->
+            val id = doc["_id"]?.toString() ?: return@all false
+            val updated = CloudBaseDb.updateDocuments(
+                client,
+                COLLECTION,
+                where = mapOf("_id" to id, "kidDeviceId" to kidDeviceId),
+                data = mapOf("adminUid" to adminUid),
+            )
+            updated != null && updated > 0
+        }
+    }
+
+    private fun ownershipWhere(kidDeviceId: String, adminUid: String?): Map<String, Any?> =
+        if (adminUid.isNullOrBlank()) {
+            mapOf("kidDeviceId" to kidDeviceId)
+        } else {
+            mapOf("kidDeviceId" to kidDeviceId, "adminUid" to adminUid)
+        }
 
 }
 

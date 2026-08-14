@@ -43,6 +43,7 @@ class GuardAccessibilityService : AccessibilityService() {
     private var lastProtectionBlockedAt = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
     private val showLauncher = Runnable { performGlobalAction(GLOBAL_ACTION_HOME) }
+    private val hardExitBlockedSurface = Runnable { performGlobalAction(GLOBAL_ACTION_HOME) }
     private val protectionReturnNavigator by lazy {
         ProtectionReturnNavigator(
             dismissProtectedSurface = { performGlobalAction(GLOBAL_ACTION_BACK) },
@@ -206,12 +207,26 @@ class GuardAccessibilityService : AccessibilityService() {
         android.util.Log.d(TAG, "$pkg verdict: blocked=${verdict.blocked} reason=${verdict.reason} rulesV=${rules.version} appLimits=${rules.appLimits}")
 
         if (verdict.blocked) {
-            // 全屏拦截：浮层 + 拦截 Activity 抢占前台（借鉴 cst；游戏无法压制 Activity）
-            BlockOverlay.show(this, verdict.reason ?: getString(R.string.overlay_default_reason))
-            BlockActivity.launch(this, verdict.reason ?: getString(R.string.overlay_default_reason))
+            // 全屏拦截：先覆盖并抢占前台，再把当前应用页送回桌面，避免短视频/播放器继续播放。
+            val reason = verdict.reason ?: getString(R.string.overlay_default_reason)
+            BlockOverlay.show(this, reason)
+            BlockActivity.launch(this, reason)
+            scheduleHardExitToLauncher()
         } else {
             if (BlockOverlay.isShowing()) BlockOverlay.hide()
         }
+    }
+
+    /**
+     * 限时拦截不仅显示遮罩，还结束当前前台页面并返回桌面。
+     * 通过无障碍全局 Home 动作实现，不使用不可用的第三方强停 API。
+     */
+    private fun scheduleHardExitToLauncher() {
+        val now = System.currentTimeMillis()
+        if (now - lastBlockedAt < HARD_EXIT_COOLDOWN_MS) return
+        lastBlockedAt = now
+        mainHandler.removeCallbacks(hardExitBlockedSurface)
+        mainHandler.postDelayed(hardExitBlockedSurface, HARD_EXIT_DELAY_MS)
     }
 
     private fun usageMinutesSnapshot(): Map<String, Long> {
@@ -236,6 +251,7 @@ class GuardAccessibilityService : AccessibilityService() {
         AccessibilityHealthStore.markDisconnected(this)
         mainHandler.removeCallbacks(protectionRecheck)
         mainHandler.removeCallbacks(showLauncher)
+        mainHandler.removeCallbacks(hardExitBlockedSurface)
         pollScope.cancel()
         BlockOverlay.hide()
         super.onDestroy()
@@ -247,6 +263,8 @@ class GuardAccessibilityService : AccessibilityService() {
         private const val USAGE_REFRESH_INTERVAL_MS = 15_000L
         private const val PROTECTION_BLOCK_COOLDOWN_MS = 3_000L
         private const val PROTECTION_RECHECK_DELAY_MS = 350L
+        private const val HARD_EXIT_DELAY_MS = 220L
+        private const val HARD_EXIT_COOLDOWN_MS = 2_000L
         private const val MAX_PROTECTION_NODES = 250
         private val PROTECTION_EVENT_TYPES = setOf(
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
