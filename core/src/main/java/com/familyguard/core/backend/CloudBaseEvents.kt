@@ -54,46 +54,54 @@ object CloudBaseEvents {
         return updated != null && updated > 0
     }
 
-    /** 查询未读异常事件（按时间倒序——查询按最新；这里取最近 limit 条未读）。 */
-    suspend fun fetchUnread(client: CloudBaseClient, kidDeviceId: String, limit: Int = 10): List<AnomalyEvent> {
+    /** 查询未读异常事件（按时间倒序——查询按最新；这里取最近 limit 条未读）。adminUid 供管理端查询。 */
+    suspend fun fetchUnread(client: CloudBaseClient, kidDeviceId: String, limit: Int = 10, adminUid: String? = null): List<AnomalyEvent> {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "read" to false)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
             client, COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId, "read" to false),
+            where = where,
             limit = limit,
         ) ?: return emptyList()
         return docs.mapNotNull(::incidentFromDocument)
     }
 
     /** 查询全部异常事件（列表页用）。 */
-    suspend fun fetchAll(client: CloudBaseClient, kidDeviceId: String, limit: Int = 50): List<AnomalyEvent> {
-        return fetchAllOrNull(client, kidDeviceId, limit).orEmpty()
+    suspend fun fetchAll(client: CloudBaseClient, kidDeviceId: String, limit: Int = 50, adminUid: String? = null): List<AnomalyEvent> {
+        return fetchAllOrNull(client, kidDeviceId, limit, adminUid).orEmpty()
     }
 
-    /** 查询全部异常事件；请求失败返回 null，便于 UI 区分网络失败和空列表。 */
-    suspend fun fetchAllOrNull(client: CloudBaseClient, kidDeviceId: String, limit: Int = 50): List<AnomalyEvent>? {
+    /** 查询全部异常事件；请求失败返回 null，便于 UI 区分网络失败和空列表。adminUid 供管理端查询。 */
+    suspend fun fetchAllOrNull(client: CloudBaseClient, kidDeviceId: String, limit: Int = 50, adminUid: String? = null): List<AnomalyEvent>? {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
             client, COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId),
+            where = where,
             limit = limit,
         ) ?: return null
         return docs.mapNotNull(::incidentFromDocument)
     }
 
-    /** 标记被控端全部事件为已读（通知弹出后调用，防止重复通知）。 */
-    suspend fun markAllRead(client: CloudBaseClient, kidDeviceId: String): Boolean {
+    /** 标记被控端全部事件为已读（通知弹出后调用，防止重复通知）。adminUid 供管理端操作。 */
+    suspend fun markAllRead(client: CloudBaseClient, kidDeviceId: String, adminUid: String? = null): Boolean {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "read" to false)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val updated = CloudBaseDb.updateDocuments(
             client, COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId, "read" to false),
+            where = where,
             data = mapOf("read" to true),
         )
         return updated != null && updated > 0
     }
 
-    suspend fun acknowledgeOpen(client: CloudBaseClient, kidDeviceId: String): Boolean {
+    suspend fun acknowledgeOpen(client: CloudBaseClient, kidDeviceId: String, adminUid: String? = null): Boolean {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
             client,
             COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId),
+            where = where,
             limit = 100,
         ) ?: return false
         val now = System.currentTimeMillis()
@@ -105,17 +113,19 @@ object CloudBaseEvents {
                 client,
                 COLLECTION,
                 where = mapOf("_id" to incident.id),
-                data = incidentDocument(kidDeviceId, acknowledged),
+                data = incidentDocument(kidDeviceId, acknowledged, adminUid),
             )
             updated != null && updated > 0
         }
     }
 
-    suspend fun resolve(client: CloudBaseClient, kidDeviceId: String, type: String): Boolean {
+    suspend fun resolve(client: CloudBaseClient, kidDeviceId: String, type: String, adminUid: String? = null): Boolean {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId, "type" to type)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
             client,
             COLLECTION,
-            where = mapOf("kidDeviceId" to kidDeviceId, "type" to type),
+            where = where,
             limit = 100,
         ) ?: return false
         val active = docs.mapNotNull(::incidentFromDocument)
@@ -128,7 +138,7 @@ object CloudBaseEvents {
                 client,
                 COLLECTION,
                 where = mapOf("_id" to incident.id),
-                data = incidentDocument(kidDeviceId, resolved),
+                data = incidentDocument(kidDeviceId, resolved, adminUid),
             )
             updated != null && updated > 0
         }

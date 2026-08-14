@@ -113,22 +113,27 @@ object CloudBaseUsage {
         }
     }
 
-    /** 拉取被控端最近一条心跳快照。 */
-    suspend fun fetchLatest(client: CloudBaseClient, kidDeviceId: String): HeartbeatSnapshot? {
+    /** 拉取被控端最近一条心跳快照。adminUid 供管理端查询（安全规则要求 adminUid/kidDeviceId 匹配）。 */
+    suspend fun fetchLatest(client: CloudBaseClient, kidDeviceId: String, adminUid: String? = null): HeartbeatSnapshot? {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
-            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = 100,
+            client, COLLECTION, where = where, limit = 100,
         ) ?: return null
         return docs.map(::heartbeatSnapshotFromDocument).maxByOrNull { it.reportedAt }
     }
 
-    /** 拉取最近心跳快照，用于管理端生成最多 7 天的本地趋势。 */
+    /** 拉取最近心跳快照，用于管理端生成最多 7 天的本地趋势。adminUid 供管理端查询。 */
     suspend fun fetchRecent(
         client: CloudBaseClient,
         kidDeviceId: String,
         limit: Int = 100,
+        adminUid: String? = null,
     ): List<HeartbeatSnapshot>? {
+        val where = mutableMapOf<String, Any?>("kidDeviceId" to kidDeviceId)
+        if (!adminUid.isNullOrBlank()) where["adminUid"] = adminUid
         val docs = CloudBaseDb.queryDocuments(
-            client, COLLECTION, where = mapOf("kidDeviceId" to kidDeviceId), limit = limit.coerceIn(1, 100),
+            client, COLLECTION, where = where, limit = limit.coerceIn(1, 100),
         ) ?: return null
         return docs.map(::heartbeatSnapshotFromDocument).sortedByDescending { it.reportedAt }
     }

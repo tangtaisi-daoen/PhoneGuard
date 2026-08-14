@@ -45,7 +45,7 @@ class MonitorActivity : AppCompatActivity() {
                 binding.btnRefresh.isEnabled = true
                 return@launch
             }
-            val recent = CloudBaseUsage.fetchRecent(AdminApp.client, kidId)
+            val recent = CloudBaseUsage.fetchRecent(AdminApp.client, kidId, adminUid = uid)
             if (recent == null) {
                 binding.tvStatus.text = getString(R.string.monitor_failed)
                 binding.btnRefresh.isEnabled = true
@@ -71,7 +71,7 @@ class MonitorActivity : AppCompatActivity() {
             // 在线状态（5 分钟阈值）
             val online = UsageAggregator.isOnline(snapshot.reportedAt, System.currentTimeMillis())
             val current = snapshot.currentApp
-            val appNames = CloudBaseApps.fetchOrNull(AdminApp.client, kidId).orEmpty().toMap()
+            val appNames = CloudBaseApps.fetchOrNull(AdminApp.client, kidId, adminUid = uid).orEmpty().toMap()
             binding.tvStatus.text = getString(
                 R.string.monitor_status,
                 if (online) getString(R.string.monitor_online) else getString(R.string.monitor_offline),
