@@ -92,7 +92,25 @@
 
 被控端验证链：清单 ECDSA 签名 → 包名/版本（防回滚）→ HTTPS → 时间窗（防重放）→ APK SHA-256 → 安装。
 
-## 5. 常见问题
+## 5. 被控端 Fully Managed 配网（可选）
+
+若要让被控端成为 Device Owner（Fully Managed）设备，可在新机或恢复出厂后的设备上通过二维码/NFC/邮件完成一次性配网。仓库内 `docs/provisioning/` 提供配网 JSON 与二维码模板（**URL 为 `YOUR_ENV_ID` 占位符，必须按你的部署替换后重新生成**）：
+
+1. 修改 JSON 三项：
+   - `PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION`：改为你托管 release APK 的实际 HTTPS 地址；
+   - `PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM`：改为该 APK 的 SHA-256（Base64 编码）；
+   - `PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM`（仅 OPPO 变体）：改为你 release 签名证书的 SHA-256（Base64 编码）：
+
+     ```bash
+     keytool -exportcert -keystore release.keystore -alias <alias> -rfc | openssl x509 -outform der | openssl dgst -sha256 -binary | openssl base64
+     ```
+
+2. 把 JSON 文件内容用任意二维码工具生成二维码（替换 `docs/provisioning/*-qr.png`），或直接以邮件/NFC 方式下发 JSON；
+3. 首次开机进入配网流程扫描二维码即可完成 Device Owner 设置，之后可静默更新、系统级防卸载（详见 `docs/fully-managed-migration.md`）。
+
+> 说明：`PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME` 指向被控端的设备管理员组件，无需修改（除非你修改了包名）。
+
+## 6. 常见问题
 
 | 现象 | 处理 |
 |---|---|
