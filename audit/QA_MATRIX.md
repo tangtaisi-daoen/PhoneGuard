@@ -57,4 +57,4 @@
 - [x] :admin:assembleDebug 全绿
 - [x] :kid:assembleDebug 全绿
 - [x] :admin:lint / :kid:lint 无新增错误（141 tasks BUILD SUCCESSFUL）
-- [ ] release 双端构建 + SHA-256（发布构建执行；需签名配置 keystore.properties，gitignored 不入库）
+- [x] release 双端构建 + SHA-256（2026-08-15 实测：admin-release.apk 7,732,330 B / SHA256 63AA3DF9…A462C6；kid-release.apk 7,965,673 B / SHA256 57AC8DA9…8246AF；签名配置为本地 keystore.properties，gitignored 不入库）
