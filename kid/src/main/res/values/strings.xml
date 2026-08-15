@@ -62,7 +62,7 @@
     <string name="about_source_title">源码获取</string>
     <string name="about_source_body">完整源码、许可证全文与构建说明可在项目仓库获取：\nhttps://github.com/tangtaisi-daoen/PhoneGuard</string>
     <string name="about_privacy_title">隐私政策</string>
-    <string name="about_privacy_body">本应用的数据处理方式见仓库内 PRIVACY_POLICY_DRAFT.md（生效日期以发布公告为准）。</string>
+    <string name="about_privacy_body">本应用的数据处理方式见仓库内 PRIVACY_POLICY_DRAFT.md（2026-08-15 生效）。</string>
     <string name="about_third_party_title">第三方声明</string>
     <string name="about_third_party_body">第三方依赖与参考来源声明见仓库内 THIRD_PARTY_NOTICES.md。</string>
 </resources>
