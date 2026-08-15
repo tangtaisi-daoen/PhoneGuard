@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">手机守护</string>
-    <string name="bind_title">输入哥哥的邀请码</string>
+    <string name="bind_title">输入家长手机的邀请码</string>
     <string name="invite_code">6 位邀请码</string>
     <string name="bind">绑定</string>
     <string name="binding">绑定中…</string>
@@ -20,7 +20,7 @@
     <string name="overlay_hint">使用时间已达上限，今天先休息一下吧</string>
     <string name="overlay_default_reason">今日使用时间已达上限</string>
     <string name="overlay_go_home">返回桌面</string>
-    <string name="guide_subtitle">每一步都必须在弟弟手机上开启，否则拦截可能失效</string>
+    <string name="guide_subtitle">每一步都必须在本手机上开启，否则拦截可能失效</string>
     <string name="guide_usage">使用情况访问</string>
     <string name="guide_accessibility">无障碍服务</string>
     <string name="guide_battery">忽略电池优化</string>

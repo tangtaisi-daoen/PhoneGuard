@@ -27,15 +27,15 @@
     <string name="error_register_failed">注册失败（账号可能已存在或网络异常）</string>
     <string name="register_success">注册成功</string>
     <string name="welcome_admin">欢迎，%1$s</string>
-    <string name="invite_code_title">弟弟手机绑定邀请码</string>
-    <string name="invite_code_tip">在弟弟手机的"手机守护"里输入此邀请码完成绑定</string>
+    <string name="invite_code_title">孩子手机绑定邀请码</string>
+    <string name="invite_code_tip">在孩子手机的"手机守护"里输入此邀请码完成绑定</string>
     <string name="copy_code">复制邀请码</string>
     <string name="refresh_code">生成/刷新邀请码</string>
     <string name="code_copied">邀请码已复制</string>
     <string name="code_generated">邀请码已生成</string>
     <string name="error_gen_code_failed">邀请码生成失败，请检查网络</string>
     <string name="refresh_code_confirm_title">重新生成邀请码？</string>
-    <string name="refresh_code_confirm_msg">旧的邀请码将立即失效，弟弟手机上若还没绑定需要重新输入新码。</string>
+    <string name="refresh_code_confirm_msg">旧的邀请码将立即失效，孩子手机上若还没绑定需要重新输入新码。</string>
     <string name="refresh_code_confirm_ok">确认生成</string>
     <string name="diag">诊断</string>
     <string name="diag_run">运行诊断</string>
@@ -79,7 +79,7 @@
     <string name="cat_other">未分类</string>
     <string name="monitor">使用报告</string>
     <string name="monitor_loading">加载中…</string>
-    <string name="monitor_not_bound">还没有绑定被控端，先去生成邀请码让弟弟绑定</string>
+    <string name="monitor_not_bound">还没有绑定被控端，先去生成邀请码让孩子手机绑定</string>
     <string name="monitor_no_data">被控端还没有上报数据（等下一次心跳，最多 2 分钟）</string>
     <string name="monitor_failed">读取使用报告失败，请检查网络后重试</string>
     <string name="monitor_online">在线</string>

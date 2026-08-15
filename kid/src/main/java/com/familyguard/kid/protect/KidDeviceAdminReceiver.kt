@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * 设备管理器：激活后系统拦截直接卸载；被停用（弟弟尝试解除）时上报异常。
+ * 设备管理器：激活后系统拦截直接卸载；被停用（尝试解除）时上报异常。
  */
 class KidDeviceAdminReceiver : DeviceAdminReceiver() {
 
